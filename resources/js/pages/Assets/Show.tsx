@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { Asset, KibType } from '@/types';
+import { Asset, AssetGeneratedDocument, KibType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,7 @@ interface Props {
     kibType: KibType;
     kibLabel: string;
     jenisOptions: string[];
+    generatedDocuments?: Record<string, AssetGeneratedDocument>;
 }
 
 function formatCurrency(value: number): string {
@@ -44,7 +45,7 @@ function Field({ label, value }: { label: string; value?: string | number | bool
     );
 }
 
-export default function AssetShow({ asset, kibType, kibLabel, jenisOptions }: Props) {
+export default function AssetShow({ asset, kibType, kibLabel, jenisOptions, generatedDocuments }: Props) {
     const kibSlug = `kib-${kibType.toLowerCase()}`;
     const detailKey = `kib_${kibType.toLowerCase()}_detail` as keyof Asset;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,8 +66,14 @@ export default function AssetShow({ asset, kibType, kibLabel, jenisOptions }: Pr
                     <div className="flex items-center gap-2">
                         {kibType === 'B' && (
                             <>
-                                <PaktaIntegritasDialog asset={asset} />
-                                <BastDialog asset={asset} />
+                                <PaktaIntegritasDialog
+                                    asset={asset}
+                                    generatedDocument={generatedDocuments?.pakta_integritas}
+                                />
+                                <BastDialog
+                                    asset={asset}
+                                    generatedDocument={generatedDocuments?.bast}
+                                />
                             </>
                         )}
                         <Button size="sm" asChild>

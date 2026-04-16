@@ -3,6 +3,7 @@
 # SIMASET Deploy Script
 # Jalankan dari komputer lokal: bash deploy.sh
 # Mendukung initial deploy & update deploy
+# Flow update: backup → deploy → verify → cleanup/rollback
 # ==============================================================
 set -e
 
@@ -13,14 +14,17 @@ SSH_PORT="22797"
 REMOTE_DIR="/var/www/simaset"
 LOCAL_DIR="$(cd "$(dirname "$0")" && pwd)"
 PHP_FPM="php8.4-fpm"
+BACKUP_DIR="/var/www/simaset-backup-$(date +%Y%m%d%H%M%S)"
 
 # --- Colors ---
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
 step() { echo -e "\n${GREEN}[STEP]${NC} $1"; }
+info() { echo -e "${CYAN}[INFO]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 fail() { echo -e "${RED}[FAIL]${NC} $1"; exit 1; }
 
@@ -33,6 +37,7 @@ echo " $(date '+%Y-%m-%d %H:%M:%S')"
 echo "==============================="
 echo " Server : ${SERVER_USER}@${SERVER_IP}:${SSH_PORT}"
 echo " Remote : ${REMOTE_DIR}"
+echo " Backup : ${BACKUP_DIR}"
 echo " Local  : ${LOCAL_DIR}"
 echo "==============================="
 
@@ -61,36 +66,190 @@ remote "
     echo 'Server OK.'
 " || fail "Pre-flight check server gagal"
 
-# --- Maintenance mode ON (hanya jika bukan initial deploy) ---
+# ==============================================================
+# UPDATE DEPLOY (dengan backup & verifikasi)
+# ==============================================================
 if [ "$INITIAL_DEPLOY" = false ]; then
+
+    # --- Backup aplikasi di server ---
+    step "Backup aplikasi di server"
+    remote "
+        set -e
+
+        echo '>>> Hitung dokumen sebelum deploy...'
+        DOC_COUNT=0
+        for DIR in '${REMOTE_DIR}/storage/app/private/asset-documents' \
+                   '${REMOTE_DIR}/storage/app/private/disposal-documents' \
+                   '${REMOTE_DIR}/storage/app/private/generated-documents'; do
+            if [ -d \"\$DIR\" ]; then
+                COUNT=\$(find \"\$DIR\" -type f | wc -l)
+                DOC_COUNT=\$((DOC_COUNT + COUNT))
+                echo \"   \$DIR: \$COUNT files\"
+            fi
+        done
+        echo \"\$DOC_COUNT\" > /tmp/simaset_doc_count_before.txt
+        echo \">>> Total dokumen sebelum deploy: \$DOC_COUNT\"
+
+        echo '>>> Backup aplikasi ke ${BACKUP_DIR}...'
+        cp -a '${REMOTE_DIR}' '${BACKUP_DIR}'
+        echo '>>> Backup selesai.'
+    " || fail "Backup gagal"
+
+    # --- Rollback function ---
+    rollback() {
+        echo -e "\n${RED}[ROLLBACK]${NC} Deploy gagal! Mengembalikan dari backup..."
+        remote "
+            set -e
+            # Restore dari backup
+            rm -rf '${REMOTE_DIR}'
+            mv '${BACKUP_DIR}' '${REMOTE_DIR}'
+
+            # Restart services
+            sudo systemctl restart ${PHP_FPM}
+            sudo supervisorctl restart simaset-worker:* 2>/dev/null || true
+
+            # Matikan maintenance mode
+            cd '${REMOTE_DIR}' && php artisan up 2>/dev/null || true
+            echo 'Rollback selesai — aplikasi dikembalikan ke versi sebelumnya.'
+        " 2>/dev/null || echo -e "${RED}Rollback gagal! Restore manual dari ${BACKUP_DIR}${NC}"
+        exit 1
+    }
+    trap rollback ERR
+
+    # --- Maintenance mode ON ---
     step "Mengaktifkan maintenance mode"
     remote "cd ${REMOTE_DIR} && php artisan down --refresh=15"
-    trap 'echo -e "\n${RED}Deploy gagal! Menonaktifkan maintenance mode...${NC}"; remote "cd ${REMOTE_DIR} && php artisan up" 2>/dev/null; exit 1' ERR
-fi
 
-# --- Rsync files ke server ---
-step "Transfer file ke server (rsync)"
-rsync -avz --progress --delete \
-    --exclude='node_modules' \
-    --exclude='vendor' \
-    --exclude='.env' \
-    --exclude='storage/logs/*' \
-    --exclude='storage/framework/cache/*' \
-    --exclude='storage/framework/sessions/*' \
-    --exclude='storage/framework/views/*' \
-    --exclude='storage/app/backups/*' \
-    --exclude='storage/app/public/*' \
-    --exclude='storage/app/documents/*' \
-    --exclude='bootstrap/cache/*' \
-    --exclude='public/hot' \
-    --exclude='.git' \
-    -e "ssh -p ${SSH_PORT}" \
-    "${LOCAL_DIR}/" \
-    "${SERVER_USER}@${SERVER_IP}:${REMOTE_DIR}/"
+    # --- Rsync files ke server ---
+    step "Transfer file ke server (rsync)"
+    rsync -avz --progress --delete \
+        --exclude='node_modules' \
+        --exclude='vendor' \
+        --exclude='.env' \
+        --exclude='storage/logs/*' \
+        --exclude='storage/framework/cache/*' \
+        --exclude='storage/framework/sessions/*' \
+        --exclude='storage/framework/views/*' \
+        --exclude='storage/app/*' \
+        --exclude='bootstrap/cache/*' \
+        --exclude='public/hot' \
+        --exclude='.git' \
+        -e "ssh -p ${SSH_PORT}" \
+        "${LOCAL_DIR}/" \
+        "${SERVER_USER}@${SERVER_IP}:${REMOTE_DIR}/" \
+        || { RSYNC_EXIT=$?; [ $RSYNC_EXIT -eq 23 ] && warn "rsync partial transfer (exit 23) — non-critical, melanjutkan deploy" || exit $RSYNC_EXIT; }
 
-# --- Remote: install, build, migrate, cache ---
-step "Menjalankan deploy di server"
-if [ "$INITIAL_DEPLOY" = true ]; then
+    # --- Remote: install, build, migrate, cache ---
+    step "Menjalankan deploy di server"
+    remote "
+        set -e
+        cd ${REMOTE_DIR}
+
+        echo '>>> Install PHP dependencies (composer)'
+        composer install --no-dev --optimize-autoloader --no-interaction
+
+        echo '>>> Install Node dependencies (npm)'
+        npm ci
+
+        echo '>>> Build frontend assets'
+        npm run build
+
+        echo '>>> Database migration'
+        php artisan migrate --force
+
+        echo '>>> Rebuild cache'
+        php artisan config:cache
+        php artisan route:cache
+        php artisan view:cache
+        php artisan event:cache
+
+        echo '>>> Set permissions'
+        sudo chown -R ardhian:www-data storage bootstrap/cache
+        chmod -R 775 storage bootstrap/cache
+
+        echo '>>> Restart PHP-FPM'
+        sudo systemctl restart ${PHP_FPM}
+
+        echo '>>> Restart queue workers'
+        sudo supervisorctl restart simaset-worker:*
+    "
+
+    # --- Verifikasi deploy ---
+    step "Verifikasi deploy"
+    remote "
+        set -e
+        cd '${REMOTE_DIR}'
+
+        echo '>>> Cek artisan bisa berjalan...'
+        php artisan --version || { echo 'FAIL: artisan tidak berjalan'; exit 1; }
+
+        echo '>>> Cek route list...'
+        php artisan route:list --json > /dev/null 2>&1 || { echo 'FAIL: route cache error'; exit 1; }
+
+        echo '>>> Hitung dokumen setelah deploy...'
+        DOC_COUNT_AFTER=0
+        for DIR in '${REMOTE_DIR}/storage/app/private/asset-documents' \
+                   '${REMOTE_DIR}/storage/app/private/disposal-documents' \
+                   '${REMOTE_DIR}/storage/app/private/generated-documents'; do
+            if [ -d \"\$DIR\" ]; then
+                COUNT=\$(find \"\$DIR\" -type f | wc -l)
+                DOC_COUNT_AFTER=\$((DOC_COUNT_AFTER + COUNT))
+                echo \"   \$DIR: \$COUNT files\"
+            fi
+        done
+
+        DOC_COUNT_BEFORE=\$(cat /tmp/simaset_doc_count_before.txt 2>/dev/null || echo '0')
+        echo \">>> Dokumen sebelum: \$DOC_COUNT_BEFORE, sesudah: \$DOC_COUNT_AFTER\"
+
+        if [ \"\$DOC_COUNT_AFTER\" -lt \"\$DOC_COUNT_BEFORE\" ]; then
+            echo \"FAIL: Dokumen berkurang! Sebelum: \$DOC_COUNT_BEFORE, Sesudah: \$DOC_COUNT_AFTER\"
+            exit 1
+        fi
+
+        echo '>>> Semua verifikasi berhasil.'
+    " || fail "Verifikasi gagal — rollback otomatis"
+
+    # --- Nyalakan aplikasi ---
+    step "Menonaktifkan maintenance mode"
+    remote "cd ${REMOTE_DIR} && php artisan up"
+
+    # --- Cleanup backup ---
+    step "Menghapus backup (deploy berhasil)"
+    remote "
+        rm -rf '${BACKUP_DIR}'
+        rm -f /tmp/simaset_doc_count_before.txt
+        echo 'Backup dihapus.'
+    "
+
+    # Clear trap
+    trap - ERR
+
+# ==============================================================
+# INITIAL DEPLOY (tanpa backup)
+# ==============================================================
+else
+
+    # --- Rsync files ke server ---
+    step "Transfer file ke server (rsync)"
+    rsync -avz --progress --delete \
+        --exclude='node_modules' \
+        --exclude='vendor' \
+        --exclude='.env' \
+        --exclude='storage/logs/*' \
+        --exclude='storage/framework/cache/*' \
+        --exclude='storage/framework/sessions/*' \
+        --exclude='storage/framework/views/*' \
+        --exclude='storage/app/*' \
+        --exclude='bootstrap/cache/*' \
+        --exclude='public/hot' \
+        --exclude='.git' \
+        -e "ssh -p ${SSH_PORT}" \
+        "${LOCAL_DIR}/" \
+        "${SERVER_USER}@${SERVER_IP}:${REMOTE_DIR}/" \
+        || { RSYNC_EXIT=$?; [ $RSYNC_EXIT -eq 23 ] && warn "rsync partial transfer (exit 23) — non-critical, melanjutkan deploy" || exit $RSYNC_EXIT; }
+
+    # --- Remote: install, build, migrate, seed, cache ---
+    step "Menjalankan initial deploy di server"
     remote "
         set -e
         cd ${REMOTE_DIR}
@@ -128,46 +287,7 @@ if [ "$INITIAL_DEPLOY" = true ]; then
         sudo chown -R ardhian:www-data storage bootstrap/cache
         chmod -R 775 storage bootstrap/cache
     "
-else
-    remote "
-        set -e
-        cd ${REMOTE_DIR}
-
-        echo '>>> Install PHP dependencies (composer)'
-        composer install --no-dev --optimize-autoloader --no-interaction
-
-        echo '>>> Install Node dependencies (npm)'
-        npm ci
-
-        echo '>>> Build frontend assets'
-        npm run build
-
-        echo '>>> Database migration'
-        php artisan migrate --force
-
-        echo '>>> Rebuild cache'
-        php artisan config:cache
-        php artisan route:cache
-        php artisan view:cache
-        php artisan event:cache
-
-        echo '>>> Set permissions'
-        sudo chown -R ardhian:www-data storage bootstrap/cache
-        chmod -R 775 storage bootstrap/cache
-
-        echo '>>> Restart PHP-FPM'
-        sudo systemctl restart ${PHP_FPM}
-
-        echo '>>> Restart queue workers'
-        sudo supervisorctl restart simaset-worker:*
-
-        echo '>>> Menonaktifkan maintenance mode'
-        php artisan up
-    "
 fi
-
-# Clear trap
-trap - ERR
 
 echo ""
 echo "==============================="

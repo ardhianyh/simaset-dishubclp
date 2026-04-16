@@ -196,6 +196,27 @@ export interface AssetDisposalDocument {
     updated_at?: string;
 }
 
+export interface Pejabat {
+    id: number;
+    nama: string;
+    nip?: string;
+    jabatan?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface AssetGeneratedDocument {
+    id: number;
+    asset_id: number;
+    jenis: 'pakta_integritas' | 'bast';
+    path: string;
+    filename: string;
+    metadata?: Record<string, string>;
+    generated_by?: number;
+    created_at?: string;
+    updated_at?: string;
+}
+
 export type PageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {

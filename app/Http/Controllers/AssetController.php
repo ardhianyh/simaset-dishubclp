@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Asset;
 use App\Models\AssetDisposal;
 use App\Models\AssetDisposalDocument;
+use App\Models\AssetGeneratedDocument;
 use App\Models\Wilayah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -182,11 +183,16 @@ class AssetController extends Controller
         $detailRelation = $this->getDetailRelation($kibType);
         $asset->load(['wilayah:id,nama', $detailRelation, 'documents', 'creator:id,name', 'updater:id,name']);
 
+        $generatedDocuments = AssetGeneratedDocument::where('asset_id', $asset->id)
+            ->get()
+            ->keyBy('jenis');
+
         return Inertia::render('Assets/Show', [
             'asset' => $asset,
             'kibType' => $kibType,
             'kibLabel' => Asset::KIB_LABELS[$kibType],
             'jenisOptions' => \App\Models\AssetDocument::JENIS_OPTIONS,
+            'generatedDocuments' => $generatedDocuments,
         ]);
     }
 

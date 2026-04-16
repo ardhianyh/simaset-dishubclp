@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asset;
+use App\Models\AssetGeneratedDocument;
 use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Mpdf\Mpdf;
 
 class ExportController extends Controller
@@ -123,6 +125,22 @@ class ExportController extends Controller
             abort(404);
         }
 
+        // Check if document already exists — serve it directly
+        if ($request->input('download')) {
+            $doc = AssetGeneratedDocument::where('asset_id', $asset->id)
+                ->where('jenis', 'pakta_integritas')
+                ->first();
+
+            if ($doc && Storage::disk('local')->exists($doc->path)) {
+                return response(Storage::disk('local')->get($doc->path), 200, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="' . $doc->filename . '"',
+                ]);
+            }
+
+            abort(404);
+        }
+
         $asset->load('kibBDetail');
         $detail = $asset->kibBDetail;
 
@@ -162,8 +180,29 @@ class ExportController extends Controller
         $mpdf->WriteHTML($html);
 
         $filename = 'Pakta_Integritas_' . str_replace(' ', '_', $asset->nama_barang) . '.pdf';
+        $pdfContent = $mpdf->Output($filename, 'S');
 
-        return response($mpdf->Output($filename, 'S'), 200, [
+        // Save to storage
+        $storagePath = 'generated-documents/' . $asset->id . '/pakta_integritas_' . time() . '.pdf';
+        Storage::disk('local')->put($storagePath, $pdfContent);
+
+        // Upsert generated document record
+        AssetGeneratedDocument::updateOrCreate(
+            ['asset_id' => $asset->id, 'jenis' => 'pakta_integritas'],
+            [
+                'path' => $storagePath,
+                'filename' => $filename,
+                'metadata' => [
+                    'nama' => $nama,
+                    'nip' => $nip,
+                    'jabatan' => $jabatan,
+                    'tanggal' => $request->input('tanggal', now()->format('Y-m-d')),
+                ],
+                'generated_by' => auth()->id(),
+            ]
+        );
+
+        return response($pdfContent, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
         ]);
@@ -172,6 +211,22 @@ class ExportController extends Controller
     public function bast(Request $request, Asset $asset)
     {
         if ($asset->kib_type !== 'B') {
+            abort(404);
+        }
+
+        // Check if document already exists — serve it directly
+        if ($request->input('download')) {
+            $doc = AssetGeneratedDocument::where('asset_id', $asset->id)
+                ->where('jenis', 'bast')
+                ->first();
+
+            if ($doc && Storage::disk('local')->exists($doc->path)) {
+                return response(Storage::disk('local')->get($doc->path), 200, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="' . $doc->filename . '"',
+                ]);
+            }
+
             abort(404);
         }
 
@@ -228,8 +283,33 @@ class ExportController extends Controller
         $mpdf->WriteHTML($html);
 
         $filename = 'BAST_' . str_replace(' ', '_', $asset->nama_barang) . '.pdf';
+        $pdfContent = $mpdf->Output($filename, 'S');
 
-        return response($mpdf->Output($filename, 'S'), 200, [
+        // Save to storage
+        $storagePath = 'generated-documents/' . $asset->id . '/bast_' . time() . '.pdf';
+        Storage::disk('local')->put($storagePath, $pdfContent);
+
+        // Upsert generated document record
+        AssetGeneratedDocument::updateOrCreate(
+            ['asset_id' => $asset->id, 'jenis' => 'bast'],
+            [
+                'path' => $storagePath,
+                'filename' => $filename,
+                'metadata' => [
+                    'nomor_surat' => $nomorSurat,
+                    'tanggal' => $tanggalRaw,
+                    'pihak1_nama' => $pihak1Nama,
+                    'pihak1_jabatan' => $pihak1Jabatan,
+                    'pihak1_nip' => $pihak1Nip,
+                    'pihak2_nama' => $pihak2Nama,
+                    'pihak2_jabatan' => $pihak2Jabatan,
+                    'pihak2_nip' => $pihak2Nip,
+                ],
+                'generated_by' => auth()->id(),
+            ]
+        );
+
+        return response($pdfContent, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
         ]);

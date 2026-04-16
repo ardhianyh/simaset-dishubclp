@@ -6,6 +6,7 @@ use App\Http\Controllers\AssetSearchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\PejabatController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicAssetController;
 use App\Http\Controllers\SettingController;
@@ -67,9 +68,15 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('wilayah', WilayahController::class)->except(['show']);
     Route::resource('users', UserController::class)->except(['show']);
+    Route::resource('pejabats', PejabatController::class)->except(['show']);
 
     Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
     Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+});
+
+// API-style routes (for search select)
+Route::middleware('auth')->group(function () {
+    Route::get('/api/pejabats/search', [PejabatController::class, 'search'])->name('api.pejabats.search');
 });
 
 require __DIR__.'/auth.php';

@@ -11,6 +11,7 @@ import {
     FileBox,
     MapPin,
     Users,
+    UserCheck,
     Settings,
     LogOut,
     ChevronDown,
@@ -171,6 +172,14 @@ export default function AuthenticatedLayout({
                                             <Link href="/users">
                                                 <Users />
                                                 <span>Pengguna</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton asChild isActive={isActive('/pejabats')}>
+                                            <Link href="/pejabats">
+                                                <UserCheck />
+                                                <span>Pejabat</span>
                                             </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
