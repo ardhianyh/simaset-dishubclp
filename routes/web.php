@@ -59,6 +59,7 @@ Route::middleware('auth')->group(function () {
 
         // Document routes
         Route::post('/{asset}/documents', [AssetDocumentController::class, 'store'])->name('assets.documents.store');
+        Route::post('/{asset}/photos', [AssetDocumentController::class, 'storePhotos'])->name('assets.photos.store');
         Route::get('/{asset}/documents/{document}', [AssetDocumentController::class, 'show'])->name('assets.documents.show');
         Route::delete('/{asset}/documents/{document}', [AssetDocumentController::class, 'destroy'])->name('assets.documents.destroy');
     });

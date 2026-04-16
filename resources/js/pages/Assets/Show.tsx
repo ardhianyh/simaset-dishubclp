@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Pencil, ArrowLeft, QrCode } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import DocumentSection from './Partials/DocumentSection';
+import PhotoSection from './Partials/PhotoSection';
 import PaktaIntegritasDialog from './Partials/PaktaIntegritasDialog';
 import BastDialog from './Partials/BastDialog';
 
@@ -234,6 +235,11 @@ export default function AssetShow({ asset, kibType, kibLabel, jenisOptions, gene
                         </CardContent>
                     </Card>
                 )}
+
+                <PhotoSection
+                    asset={asset}
+                    kibSlug={kibSlug}
+                />
 
                 <DocumentSection
                     asset={asset}

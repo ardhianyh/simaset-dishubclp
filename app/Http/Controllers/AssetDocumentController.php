@@ -39,6 +39,40 @@ class AssetDocumentController extends Controller
         return back()->with('success', 'Dokumen berhasil diupload.');
     }
 
+    public function storePhotos(Request $request, string $kibSlug, Asset $asset)
+    {
+        $request->validate([
+            'photos' => ['required', 'array', 'min:1', 'max:20'],
+            'photos.*' => [
+                'required',
+                'file',
+                'max:1024', // 1MB
+                'mimes:jpg,jpeg,png',
+            ],
+        ]);
+
+        $count = 0;
+
+        foreach ($request->file('photos') as $file) {
+            $namaFile = Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('asset-documents/' . $asset->id, $namaFile, 'local');
+
+            $asset->documents()->create([
+                'jenis_dokumen' => 'Foto',
+                'nama_asli' => $file->getClientOriginalName(),
+                'nama_file' => $namaFile,
+                'path' => $path,
+                'ukuran_bytes' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'uploaded_by' => auth()->id(),
+            ]);
+
+            $count++;
+        }
+
+        return back()->with('success', "$count foto berhasil diupload.");
+    }
+
     public function show(string $kibSlug, Asset $asset, AssetDocument $document)
     {
         if ($document->asset_id !== $asset->id) {
