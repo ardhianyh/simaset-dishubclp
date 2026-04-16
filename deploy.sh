@@ -14,7 +14,8 @@ SSH_PORT="22797"
 REMOTE_DIR="/var/www/simaset"
 LOCAL_DIR="$(cd "$(dirname "$0")" && pwd)"
 PHP_FPM="php8.4-fpm"
-BACKUP_DIR="/var/www/simaset-backup-$(date +%Y%m%d%H%M%S)"
+BACKUP_DIR="/var/www/simaset-docs-backup-$(date +%Y%m%d%H%M%S)"
+DOC_DIRS="asset-documents disposal-documents generated-documents"
 
 # --- Colors ---
 RED='\033[0;31m'
@@ -71,38 +72,52 @@ remote "
 # ==============================================================
 if [ "$INITIAL_DEPLOY" = false ]; then
 
-    # --- Backup aplikasi di server ---
-    step "Backup aplikasi di server"
+    # --- Backup dokumen di server ---
+    step "Backup dokumen di server"
     remote "
         set -e
+        STORAGE='${REMOTE_DIR}/storage/app/private'
 
         echo '>>> Hitung dokumen sebelum deploy...'
         DOC_COUNT=0
-        for DIR in '${REMOTE_DIR}/storage/app/private/asset-documents' \
-                   '${REMOTE_DIR}/storage/app/private/disposal-documents' \
-                   '${REMOTE_DIR}/storage/app/private/generated-documents'; do
+        for NAME in ${DOC_DIRS}; do
+            DIR=\"\$STORAGE/\$NAME\"
             if [ -d \"\$DIR\" ]; then
-                COUNT=\$(find \"\$DIR\" -type f | wc -l)
+                COUNT=\$(sudo find \"\$DIR\" -type f | wc -l)
                 DOC_COUNT=\$((DOC_COUNT + COUNT))
-                echo \"   \$DIR: \$COUNT files\"
+                echo \"   \$NAME: \$COUNT files\"
             fi
         done
         echo \"\$DOC_COUNT\" > /tmp/simaset_doc_count_before.txt
         echo \">>> Total dokumen sebelum deploy: \$DOC_COUNT\"
 
-        echo '>>> Backup aplikasi ke ${BACKUP_DIR}...'
-        cp -a '${REMOTE_DIR}' '${BACKUP_DIR}'
+        echo '>>> Backup dokumen ke ${BACKUP_DIR}...'
+        sudo mkdir -p '${BACKUP_DIR}'
+        for NAME in ${DOC_DIRS}; do
+            DIR=\"\$STORAGE/\$NAME\"
+            if [ -d \"\$DIR\" ]; then
+                sudo cp -a \"\$DIR\" '${BACKUP_DIR}/'
+            fi
+        done
         echo '>>> Backup selesai.'
     " || fail "Backup gagal"
 
     # --- Rollback function ---
     rollback() {
-        echo -e "\n${RED}[ROLLBACK]${NC} Deploy gagal! Mengembalikan dari backup..."
+        echo -e "\n${RED}[ROLLBACK]${NC} Deploy gagal! Mengembalikan dokumen dari backup..."
         remote "
-            set -e
-            # Restore dari backup
-            rm -rf '${REMOTE_DIR}'
-            mv '${BACKUP_DIR}' '${REMOTE_DIR}'
+            STORAGE='${REMOTE_DIR}/storage/app/private'
+
+            # Restore dokumen dari backup
+            for NAME in ${DOC_DIRS}; do
+                if [ -d '${BACKUP_DIR}/'\"\$NAME\" ]; then
+                    sudo rm -rf \"\$STORAGE/\$NAME\"
+                    sudo cp -a '${BACKUP_DIR}/'\"\$NAME\" \"\$STORAGE/\"
+                fi
+            done
+
+            # Fix permissions
+            sudo chown -R ardhian:www-data '${REMOTE_DIR}/storage'
 
             # Restart services
             sudo systemctl restart ${PHP_FPM}
@@ -110,7 +125,7 @@ if [ "$INITIAL_DEPLOY" = false ]; then
 
             # Matikan maintenance mode
             cd '${REMOTE_DIR}' && php artisan up 2>/dev/null || true
-            echo 'Rollback selesai — aplikasi dikembalikan ke versi sebelumnya.'
+            echo 'Rollback dokumen selesai.'
         " 2>/dev/null || echo -e "${RED}Rollback gagal! Restore manual dari ${BACKUP_DIR}${NC}"
         exit 1
     }
@@ -187,14 +202,14 @@ if [ "$INITIAL_DEPLOY" = false ]; then
         php artisan route:list --json > /dev/null 2>&1 || { echo 'FAIL: route cache error'; exit 1; }
 
         echo '>>> Hitung dokumen setelah deploy...'
+        STORAGE='${REMOTE_DIR}/storage/app/private'
         DOC_COUNT_AFTER=0
-        for DIR in '${REMOTE_DIR}/storage/app/private/asset-documents' \
-                   '${REMOTE_DIR}/storage/app/private/disposal-documents' \
-                   '${REMOTE_DIR}/storage/app/private/generated-documents'; do
+        for NAME in ${DOC_DIRS}; do
+            DIR=\"\$STORAGE/\$NAME\"
             if [ -d \"\$DIR\" ]; then
-                COUNT=\$(find \"\$DIR\" -type f | wc -l)
+                COUNT=\$(sudo find \"\$DIR\" -type f | wc -l)
                 DOC_COUNT_AFTER=\$((DOC_COUNT_AFTER + COUNT))
-                echo \"   \$DIR: \$COUNT files\"
+                echo \"   \$NAME: \$COUNT files\"
             fi
         done
 
@@ -216,7 +231,7 @@ if [ "$INITIAL_DEPLOY" = false ]; then
     # --- Cleanup backup ---
     step "Menghapus backup (deploy berhasil)"
     remote "
-        rm -rf '${BACKUP_DIR}'
+        sudo rm -rf '${BACKUP_DIR}'
         rm -f /tmp/simaset_doc_count_before.txt
         echo 'Backup dihapus.'
     "
