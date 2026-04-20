@@ -16,9 +16,9 @@
         .kop-alamat { font-size: 9pt; margin-top: 2mm; line-height: 1.4; }
         .kop-border { border-bottom: 3px double #000; margin-top: 2mm; margin-bottom: 2mm; }
 
-        .judul { text-align: center; margin: 2mm 0; }
-        .judul h3 { font-size: 12pt; font-weight: bold; text-decoration: underline; line-height: 1.4; }
-        .judul h4 { font-size: 12pt; font-weight: bold; text-decoration: underline; line-height: 1.4; }
+        .judul { text-align: center; margin: 0 0 2mm 0; }
+        .judul h3 { font-size: 12pt; font-weight: bold; line-height: 1.3; }
+        .judul h4 { font-size: 12pt; font-weight: bold; line-height: 1.3; }
         .judul .nomor { font-size: 11pt; margin-top: 2mm; text-align: center; }
 
         p { margin-bottom: 3mm; text-align: justify; }
@@ -42,7 +42,7 @@
         .pasal3-table .num { width: 10mm; white-space: nowrap; }
 
         .ttd-space { height: 28mm; }
-        .ttd-name { font-weight: bold; text-decoration: underline; }
+        .ttd-name { font-weight: bold; text-decoration: underline; white-space: nowrap; }
         .ttd-nip { font-size: 10pt; }
     </style>
 </head>

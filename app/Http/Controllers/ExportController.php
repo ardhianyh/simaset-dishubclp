@@ -18,8 +18,10 @@ class ExportController extends Controller
         if (file_exists($logoPath)) {
             $data = base64_encode(file_get_contents($logoPath));
             $mime = mime_content_type($logoPath);
+
             return "data:{$mime};base64,{$data}";
         }
+
         return null;
     }
 
@@ -86,7 +88,7 @@ class ExportController extends Controller
         $settings = $this->getSettings();
         $tanggal = now()->translatedFormat('d F Y');
 
-        $viewName = 'exports.kib-' . strtolower($kibType);
+        $viewName = 'exports.kib-'.strtolower($kibType);
 
         $pdf = Pdf::loadView($viewName, [
             'assets' => $assets,
@@ -99,7 +101,7 @@ class ExportController extends Controller
             'logoBase64' => $this->getLogoBase64(),
         ])->setPaper('a4', 'landscape');
 
-        $filename = 'Rekapitulasi_' . str_replace(' ', '_', Asset::KIB_LABELS[$kibType]) . '_' . date('Y-m-d') . '.pdf';
+        $filename = 'Rekapitulasi_'.str_replace(' ', '_', Asset::KIB_LABELS[$kibType]).'_'.date('Y-m-d').'.pdf';
 
         return $pdf->download($filename);
     }
@@ -107,6 +109,7 @@ class ExportController extends Controller
     private function makeMpdf(): Mpdf
     {
         ini_set('pcre.backtrack_limit', '5000000');
+
         return new Mpdf([
             'format' => 'A4',
             'margin_top' => 25.4,
@@ -115,7 +118,7 @@ class ExportController extends Controller
             'margin_right' => 25.4,
             'default_font' => 'dejavuserif',
             'default_font_size' => 12,
-            'tempDir' => sys_get_temp_dir() . '/mpdf_' . getmypid(),
+            'tempDir' => sys_get_temp_dir().'/mpdf_'.getmypid(),
         ]);
     }
 
@@ -134,7 +137,7 @@ class ExportController extends Controller
             if ($doc && Storage::disk('local')->exists($doc->path)) {
                 return response(Storage::disk('local')->get($doc->path), 200, [
                     'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => 'inline; filename="' . $doc->filename . '"',
+                    'Content-Disposition' => 'inline; filename="'.$doc->filename.'"',
                 ]);
             }
 
@@ -179,11 +182,11 @@ class ExportController extends Controller
         $mpdf = $this->makeMpdf();
         $mpdf->WriteHTML($html);
 
-        $filename = 'Pakta_Integritas_' . str_replace(' ', '_', $asset->nama_barang) . '.pdf';
+        $filename = 'Pakta_Integritas_'.str_replace(' ', '_', $asset->nama_barang).'.pdf';
         $pdfContent = $mpdf->Output($filename, 'S');
 
         // Save to storage
-        $storagePath = 'generated-documents/' . $asset->id . '/pakta_integritas_' . time() . '.pdf';
+        $storagePath = 'generated-documents/'.$asset->id.'/pakta_integritas_'.time().'.pdf';
         Storage::disk('local')->put($storagePath, $pdfContent);
 
         // Upsert generated document record
@@ -204,7 +207,7 @@ class ExportController extends Controller
 
         return response($pdfContent, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Content-Disposition' => 'inline; filename="'.$filename.'"',
         ]);
     }
 
@@ -223,7 +226,7 @@ class ExportController extends Controller
             if ($doc && Storage::disk('local')->exists($doc->path)) {
                 return response(Storage::disk('local')->get($doc->path), 200, [
                     'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => 'inline; filename="' . $doc->filename . '"',
+                    'Content-Disposition' => 'inline; filename="'.$doc->filename.'"',
                 ]);
             }
 
@@ -235,13 +238,16 @@ class ExportController extends Controller
 
         $settings = $this->getSettings();
 
-        $nomorSurat = $request->input('nomor_surat', '');
         $tanggalRaw = $request->input('tanggal', now()->format('Y-m-d'));
-        $tanggalFormatted = \Carbon\Carbon::parse($tanggalRaw)->translatedFormat('d F Y');
+        $tanggalCarbon = \Carbon\Carbon::parse($tanggalRaw);
+        $tanggalFormatted = $tanggalCarbon->translatedFormat('d F Y');
         $tanggalTerbilang = $this->tanggalTerbilang($tanggalRaw);
 
+        $nomorInput = trim((string) $request->input('nomor_surat', ''));
+        $nomorSurat = $nomorInput !== '' ? "000.3.2/{$nomorInput}/21/{$tanggalCarbon->year}" : '';
+
         $pihak1Nama = $request->input('pihak1_nama', $settings['ttd_kepala_nama']);
-        $pihak1Jabatan = $request->input('pihak1_jabatan', 'Kepala ' . ($settings['instansi_unit'] ?: 'Dinas'));
+        $pihak1Jabatan = $request->input('pihak1_jabatan', 'Kepala '.($settings['instansi_unit'] ?: 'Dinas'));
         $pihak1Nip = $request->input('pihak1_nip', $settings['ttd_kepala_nip']);
 
         $pihak2Nama = $request->input('pihak2_nama', $asset->pj_nama);
@@ -254,7 +260,7 @@ class ExportController extends Controller
             'No. Rangka' => $detail?->nomor_rangka ?? '-',
             'No. Polisi' => $detail?->nomor_polisi ?? '-',
             'Tahun Perolehan' => $detail?->tahun_pembelian ?? '-',
-            'Harga Perolehan' => 'Rp ' . number_format($asset->harga, 0, ',', '.') . ',-',
+            'Harga Perolehan' => 'Rp '.number_format($asset->harga, 0, ',', '.').',-',
         ];
 
         // Extract kabupaten name
@@ -282,11 +288,11 @@ class ExportController extends Controller
         $mpdf->SetTopMargin(15);
         $mpdf->WriteHTML($html);
 
-        $filename = 'BAST_' . str_replace(' ', '_', $asset->nama_barang) . '.pdf';
+        $filename = 'BAST_'.str_replace(' ', '_', $asset->nama_barang).'.pdf';
         $pdfContent = $mpdf->Output($filename, 'S');
 
         // Save to storage
-        $storagePath = 'generated-documents/' . $asset->id . '/bast_' . time() . '.pdf';
+        $storagePath = 'generated-documents/'.$asset->id.'/bast_'.time().'.pdf';
         Storage::disk('local')->put($storagePath, $pdfContent);
 
         // Upsert generated document record
@@ -311,7 +317,7 @@ class ExportController extends Controller
 
         return response($pdfContent, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Content-Disposition' => 'inline; filename="'.$filename.'"',
         ]);
     }
 
@@ -362,17 +368,17 @@ class ExportController extends Controller
         if ($angka < 12) {
             return $huruf[$angka];
         } elseif ($angka < 20) {
-            return $this->angkaTerbilang($angka - 10) . ' belas';
+            return $this->angkaTerbilang($angka - 10).' belas';
         } elseif ($angka < 100) {
-            return $this->angkaTerbilang(intdiv($angka, 10)) . ' puluh ' . $this->angkaTerbilang($angka % 10);
+            return $this->angkaTerbilang(intdiv($angka, 10)).' puluh '.$this->angkaTerbilang($angka % 10);
         } elseif ($angka < 200) {
-            return 'seratus ' . $this->angkaTerbilang($angka - 100);
+            return 'seratus '.$this->angkaTerbilang($angka - 100);
         } elseif ($angka < 1000) {
-            return $this->angkaTerbilang(intdiv($angka, 100)) . ' ratus ' . $this->angkaTerbilang($angka % 100);
+            return $this->angkaTerbilang(intdiv($angka, 100)).' ratus '.$this->angkaTerbilang($angka % 100);
         } elseif ($angka < 2000) {
-            return 'seribu ' . $this->angkaTerbilang($angka - 1000);
+            return 'seribu '.$this->angkaTerbilang($angka - 1000);
         } elseif ($angka < 1000000) {
-            return $this->angkaTerbilang(intdiv($angka, 1000)) . ' ribu ' . $this->angkaTerbilang($angka % 1000);
+            return $this->angkaTerbilang(intdiv($angka, 1000)).' ribu '.$this->angkaTerbilang($angka % 1000);
         }
 
         return trim((string) $angka);

@@ -123,11 +123,16 @@ export default function BastDialog({ asset, generatedDocument }: Props) {
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label>Nomor Surat</Label>
-                                    <Input
-                                        value={nomorSurat}
-                                        onChange={(e) => setNomorSurat(e.target.value)}
-                                        placeholder="000.2.3.2/..."
-                                    />
+                                    <div className="flex items-center gap-1 text-sm">
+                                        <span className="text-muted-foreground whitespace-nowrap">000.3.2/</span>
+                                        <Input
+                                            value={nomorSurat}
+                                            onChange={(e) => setNomorSurat(e.target.value.replace(/[^0-9]/g, ''))}
+                                            placeholder="876"
+                                            inputMode="numeric"
+                                        />
+                                        <span className="text-muted-foreground whitespace-nowrap">/21/{new Date(tanggal).getFullYear() || new Date().getFullYear()}</span>
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Tanggal</Label>
