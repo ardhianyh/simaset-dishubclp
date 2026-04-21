@@ -123,13 +123,14 @@ export default function BastDialog({ asset, generatedDocument }: Props) {
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label>Nomor Surat</Label>
-                                    <div className="flex items-center gap-1 text-sm">
+                                    <div className="border-input focus-within:ring-ring flex h-10 w-full items-center rounded-md border bg-transparent px-3 text-sm shadow-sm transition-colors focus-within:ring-1">
                                         <span className="text-muted-foreground whitespace-nowrap">000.3.2/</span>
-                                        <Input
+                                        <input
                                             value={nomorSurat}
                                             onChange={(e) => setNomorSurat(e.target.value.replace(/[^0-9]/g, ''))}
                                             placeholder="876"
                                             inputMode="numeric"
+                                            className="placeholder:text-muted-foreground w-full min-w-0 flex-1 border-0 bg-transparent p-0 text-center outline-none focus:ring-0"
                                         />
                                         <span className="text-muted-foreground whitespace-nowrap">/21/{new Date(tanggal).getFullYear() || new Date().getFullYear()}</span>
                                     </div>
@@ -140,6 +141,7 @@ export default function BastDialog({ asset, generatedDocument }: Props) {
                                         type="date"
                                         value={tanggal}
                                         onChange={(e) => setTanggal(e.target.value)}
+                                        className="[&::-webkit-datetime-edit]:flex-1"
                                     />
                                 </div>
                             </div>
