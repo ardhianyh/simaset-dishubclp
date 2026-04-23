@@ -84,9 +84,9 @@
 <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 10mm;">
     <tr>
         <td width="50%"></td>
-        <td width="50%" align="center">
-            <p style="text-align: center; margin: 0;">{{ $settings['ttd_kota'] ?: 'Cilacap' }}, {{ $tanggal }}</p>
-            <p style="text-align: center; margin: 0 0 2mm 0;">Yang Menyatakan,</p>
+        <td width="50%" align="left">
+            <p style="text-align: left; margin: 0;">{{ $settings['ttd_kota'] ?: 'Cilacap' }}, {{ $tanggal }}</p>
+            <p style="text-align: left; margin: 0 0 2mm 0;">Yang Menyatakan,</p>
         </td>
     </tr>
     <tr>
@@ -95,10 +95,10 @@
     </tr>
     <tr>
         <td width="50%"></td>
-        <td width="50%" align="center">
-            <p style="text-align: center; margin: 0; font-weight: bold; text-decoration: underline;">{{ $nama }}</p>
+        <td width="50%" align="left">
+            <p style="text-align: left; margin: 0; font-weight: bold; text-decoration: underline;">{{ $nama }}</p>
             @if($nip)
-            <p style="text-align: center; margin: 0;">NIP. {{ $nip }}</p>
+            <p style="text-align: left; margin: 0;">NIP. {{ $nip }}</p>
             @endif
         </td>
     </tr>

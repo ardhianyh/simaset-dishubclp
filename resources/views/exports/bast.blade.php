@@ -17,8 +17,7 @@
         .kop-border { border-bottom: 3px double #000; margin-top: 2mm; margin-bottom: 2mm; }
 
         .judul { text-align: center; margin: 0 0 2mm 0; }
-        .judul h3 { font-size: 12pt; font-weight: bold; line-height: 1.3; }
-        .judul h4 { font-size: 12pt; font-weight: bold; line-height: 1.3; }
+        .judul h3 { font-size: 12pt; font-weight: bold; line-height: 1.2; }
         .judul .nomor { font-size: 11pt; margin-top: 2mm; text-align: center; }
 
         p { margin-bottom: 3mm; text-align: justify; }
@@ -27,7 +26,7 @@
         .pihak-table { width: 100%; margin: 3mm 0; border-collapse: collapse; }
         .pihak-table td { padding: 2px 4px; vertical-align: top; }
         .pihak-table .no { width: 8mm; }
-        .pihak-table .nama { width: 55mm; }
+        .pihak-table .nama { white-space: nowrap; padding-right: 4mm; }
         .pihak-table .sep { width: 8mm; text-align: center; }
 
         .pasal { text-align: center; font-weight: bold; margin: 5mm 0 3mm 0; }
@@ -70,8 +69,7 @@
 
     <!-- JUDUL -->
     <div class="judul">
-        <h3>BERITA ACARA SERAH TERIMA BARANG-BARANG INVENTARIS</h3>
-        <h4>MILIK PEMERINTAH KABUPATEN {{ strtoupper($kabupaten) }}</h4>
+        <h3>BERITA ACARA SERAH TERIMA BARANG-BARANG INVENTARIS<br>MILIK PEMERINTAH KABUPATEN {{ strtoupper($kabupaten) }}</h3>
         @if($nomorSurat)
             <p class="nomor">Nomor : {{ $nomorSurat }}</p>
         @endif
@@ -116,7 +114,7 @@
     <!-- PASAL 2 -->
     <p class="pasal">Pasal 2</p>
 
-    <p class="p-indent">Penyerahan barang inventaris tersebut pada pasal 1 sebagai bentuk pertanggungjawaban atas penggunaan Alat Kantor Oleh PIHAK KEDUA dalam menunjang tugas-tugas kedinasan.</p>
+    <p class="p-indent">Penyerahan barang inventaris tersebut pada pasal 1 sebagai bentuk pertanggungjawaban atas penggunaan {{ $jenisBarang }} Oleh PIHAK KEDUA dalam menunjang tugas-tugas kedinasan.</p>
 
     <!-- PASAL 3 -->
     <p class="pasal">Pasal 3</p>
@@ -138,26 +136,27 @@
     <!-- TTD -->
     <table style="width: 100%; margin-top: 8mm;">
         <tr>
-            <td colspan="2" style="text-align: right; padding-bottom: 3mm;">
+            <td style="width: 50%;"></td>
+            <td style="width: 50%; text-align: left; padding-bottom: 3mm;">
                 {{ $settings['ttd_kota'] ?: 'Cilacap' }}, {{ $tanggalFormatted }}
             </td>
         </tr>
         <tr>
-            <td style="width: 50%; text-align: center;">PIHAK KEDUA</td>
-            <td style="width: 50%; text-align: center;">PIHAK PERTAMA</td>
+            <td style="width: 50%; text-align: left;">PIHAK KEDUA</td>
+            <td style="width: 50%; text-align: left;">PIHAK PERTAMA</td>
         </tr>
         <tr>
             <td style="height: 30mm; width: 50%;"></td>
             <td style="height: 30mm; width: 50%;"></td>
         </tr>
         <tr>
-            <td style="text-align: center;">
+            <td style="text-align: left;">
                 <span class="ttd-name">{{ $pihak2Nama }}</span><br>
                 @if($pihak2Nip)
                 <span class="ttd-nip">NIP. {{ $pihak2Nip }}</span>
                 @endif
             </td>
-            <td style="text-align: center;">
+            <td style="text-align: left;">
                 <span class="ttd-name">{{ $pihak1Nama }}</span><br>
                 @if($pihak1Nip)
                 <span class="ttd-nip">NIP. {{ $pihak1Nip }}</span>

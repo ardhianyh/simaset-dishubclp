@@ -263,6 +263,9 @@ class ExportController extends Controller
             'Harga Perolehan' => 'Rp '.number_format($asset->harga, 0, ',', '.').',-',
         ];
 
+        $isKendaraan = ! empty($detail?->nomor_polisi) || ! empty($detail?->nomor_rangka) || ! empty($detail?->nomor_bpkb);
+        $jenisBarang = $isKendaraan ? 'Kendaraan Dinas' : 'Alat Kantor';
+
         // Extract kabupaten name
         $kabkota = $settings['instansi_kabkota'] ?: 'Cilacap';
         $kabupaten = str_ireplace(['pemerintah kabupaten ', 'pemerintah kota ', 'kabupaten ', 'kota '], '', $kabkota);
@@ -280,6 +283,7 @@ class ExportController extends Controller
             'pihak2Jabatan' => $pihak2Jabatan,
             'pihak2Nip' => $pihak2Nip,
             'rincianBarang' => $rincianBarang,
+            'jenisBarang' => $jenisBarang,
             'kabupaten' => $kabupaten,
             'logoBase64' => $this->getLogoBase64(),
         ])->render();
