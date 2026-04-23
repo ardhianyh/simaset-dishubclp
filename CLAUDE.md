@@ -41,7 +41,7 @@ npx tsc --noEmit           # TypeScript check
 
 ## Git Conventions
 
-- **Commit format:** Conventional Commits, single line, English
+- **Commit format:** Conventional Commits, single line, English, no body, no Co-Authored-By trailer
   - `feat: add user export feature`
   - `fix: resolve asset search pagination`
   - `refactor: simplify KIB form validation`
@@ -50,7 +50,6 @@ npx tsc --noEmit           # TypeScript check
   - `style: fix dashboard layout alignment`
   - `perf: optimize asset query with eager loading`
 - **Branch:** Work on `master` (single developer workflow)
-- **Co-author line:** Always append `Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>`
 
 ## Architecture
 
