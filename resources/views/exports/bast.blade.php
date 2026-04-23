@@ -134,10 +134,10 @@
     <p class="p-indent">Demikian Berita Acara Serah Terima ini dibuat dalam rangkap 3 (tiga) untuk dipergunakan sebagaimana mestinya.</p>
 
     <!-- TTD -->
-    <table style="width: 100%; margin-top: 8mm;">
+    <table style="width: 100%; margin-top: 8mm; line-height: 1.2;">
         <tr>
             <td style="width: 50%;"></td>
-            <td style="width: 50%; text-align: left; padding-bottom: 3mm;">
+            <td style="width: 50%; text-align: left;">
                 {{ $settings['ttd_kota'] ?: 'Cilacap' }}, {{ $tanggalFormatted }}
             </td>
         </tr>
