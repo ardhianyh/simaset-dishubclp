@@ -144,17 +144,35 @@ class ExportController extends Controller
             abort(404);
         }
 
-        $asset->load('kibBDetail');
+        $metadata = [
+            'nama' => $request->input('nama', $asset->pj_nama),
+            'nip' => $request->input('nip', $asset->pj_nip ?? ''),
+            'jabatan' => $request->input('jabatan', ''),
+            'tanggal' => $request->input('tanggal', now()->format('Y-m-d')),
+        ];
+
+        [$pdfContent, $filename] = $this->generatePaktaPdf($asset, $metadata, auth()->id());
+
+        return response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.$filename.'"',
+        ]);
+    }
+
+    /**
+     * Render, persist, and upsert a Pakta Integritas PDF.
+     *
+     * @param  array{nama: string, nip: string, jabatan: string, tanggal: string}  $metadata
+     * @return array{0: string, 1: string} [pdfContent, filename]
+     */
+    public function generatePaktaPdf(Asset $asset, array $metadata, ?int $generatedBy = null): array
+    {
+        $asset->loadMissing('kibBDetail');
         $detail = $asset->kibBDetail;
 
         $settings = $this->getSettings();
 
-        $nama = $request->input('nama', $asset->pj_nama);
-        $nip = $request->input('nip', $asset->pj_nip ?? '');
-        $jabatan = $request->input('jabatan', '');
-        $tanggal = $request->input('tanggal')
-            ? \Carbon\Carbon::parse($request->input('tanggal'))->translatedFormat('d F Y')
-            : now()->translatedFormat('d F Y');
+        $tanggalFormatted = \Carbon\Carbon::parse($metadata['tanggal'])->translatedFormat('d F Y');
 
         $spesifikasi = [
             'Merk/Type' => $detail?->merk_type ?? '-',
@@ -163,17 +181,16 @@ class ExportController extends Controller
             'Tahun Pembuatan' => $detail?->tahun_pembelian ?? '-',
         ];
 
-        // Extract kabupaten name
         $kabkota = $settings['instansi_kabkota'] ?: 'Cilacap';
         $kabupaten = str_ireplace(['pemerintah kabupaten ', 'pemerintah kota ', 'kabupaten ', 'kota '], '', $kabkota);
 
         $html = view('exports.pakta-integritas', [
             'asset' => $asset,
             'settings' => $settings,
-            'nama' => $nama,
-            'nip' => $nip,
-            'jabatan' => $jabatan,
-            'tanggal' => $tanggal,
+            'nama' => $metadata['nama'],
+            'nip' => $metadata['nip'],
+            'jabatan' => $metadata['jabatan'],
+            'tanggal' => $tanggalFormatted,
             'spesifikasi' => $spesifikasi,
             'kabupaten' => $kabupaten,
             'logoBase64' => $this->getLogoBase64(),
@@ -185,30 +202,20 @@ class ExportController extends Controller
         $filename = 'Pakta_Integritas_'.str_replace(' ', '_', $asset->nama_barang).'.pdf';
         $pdfContent = $mpdf->Output($filename, 'S');
 
-        // Save to storage
         $storagePath = 'generated-documents/'.$asset->id.'/pakta_integritas_'.time().'.pdf';
         Storage::disk('local')->put($storagePath, $pdfContent);
 
-        // Upsert generated document record
         AssetGeneratedDocument::updateOrCreate(
             ['asset_id' => $asset->id, 'jenis' => 'pakta_integritas'],
             [
                 'path' => $storagePath,
                 'filename' => $filename,
-                'metadata' => [
-                    'nama' => $nama,
-                    'nip' => $nip,
-                    'jabatan' => $jabatan,
-                    'tanggal' => $request->input('tanggal', now()->format('Y-m-d')),
-                ],
-                'generated_by' => auth()->id(),
+                'metadata' => $metadata,
+                'generated_by' => $generatedBy,
             ]
         );
 
-        return response($pdfContent, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="'.$filename.'"',
-        ]);
+        return [$pdfContent, $filename];
     }
 
     public function bast(Request $request, Asset $asset)
@@ -233,26 +240,48 @@ class ExportController extends Controller
             abort(404);
         }
 
-        $asset->load('kibBDetail');
+        $settings = $this->getSettings();
+
+        $tanggalRaw = $request->input('tanggal', now()->format('Y-m-d'));
+        $nomorInput = trim((string) $request->input('nomor_surat', ''));
+        $nomorSurat = $nomorInput !== ''
+            ? "000.3.2/{$nomorInput}/21/".\Carbon\Carbon::parse($tanggalRaw)->year
+            : '';
+
+        $metadata = [
+            'nomor_surat' => $nomorSurat,
+            'tanggal' => $tanggalRaw,
+            'pihak1_nama' => $request->input('pihak1_nama', $settings['ttd_kepala_nama']),
+            'pihak1_jabatan' => $request->input('pihak1_jabatan', 'Kepala '.($settings['instansi_unit'] ?: 'Dinas')),
+            'pihak1_nip' => $request->input('pihak1_nip', $settings['ttd_kepala_nip']),
+            'pihak2_nama' => $request->input('pihak2_nama', $asset->pj_nama),
+            'pihak2_jabatan' => $request->input('pihak2_jabatan', ''),
+            'pihak2_nip' => $request->input('pihak2_nip', $asset->pj_nip ?? ''),
+        ];
+
+        [$pdfContent, $filename] = $this->generateBastPdf($asset, $metadata, auth()->id());
+
+        return response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.$filename.'"',
+        ]);
+    }
+
+    /**
+     * Render, persist, and upsert a BAST PDF.
+     *
+     * @param  array{nomor_surat: string, tanggal: string, pihak1_nama: string, pihak1_jabatan: string, pihak1_nip: ?string, pihak2_nama: string, pihak2_jabatan: string, pihak2_nip: ?string}  $metadata
+     * @return array{0: string, 1: string} [pdfContent, filename]
+     */
+    public function generateBastPdf(Asset $asset, array $metadata, ?int $generatedBy = null): array
+    {
+        $asset->loadMissing('kibBDetail');
         $detail = $asset->kibBDetail;
 
         $settings = $this->getSettings();
 
-        $tanggalRaw = $request->input('tanggal', now()->format('Y-m-d'));
-        $tanggalCarbon = \Carbon\Carbon::parse($tanggalRaw);
-        $tanggalFormatted = $tanggalCarbon->translatedFormat('d F Y');
-        $tanggalTerbilang = $this->tanggalTerbilang($tanggalRaw);
-
-        $nomorInput = trim((string) $request->input('nomor_surat', ''));
-        $nomorSurat = $nomorInput !== '' ? "000.3.2/{$nomorInput}/21/{$tanggalCarbon->year}" : '';
-
-        $pihak1Nama = $request->input('pihak1_nama', $settings['ttd_kepala_nama']);
-        $pihak1Jabatan = $request->input('pihak1_jabatan', 'Kepala '.($settings['instansi_unit'] ?: 'Dinas'));
-        $pihak1Nip = $request->input('pihak1_nip', $settings['ttd_kepala_nip']);
-
-        $pihak2Nama = $request->input('pihak2_nama', $asset->pj_nama);
-        $pihak2Jabatan = $request->input('pihak2_jabatan', '');
-        $pihak2Nip = $request->input('pihak2_nip', $asset->pj_nip ?? '');
+        $tanggalFormatted = \Carbon\Carbon::parse($metadata['tanggal'])->translatedFormat('d F Y');
+        $tanggalTerbilang = $this->tanggalTerbilang($metadata['tanggal']);
 
         $rincianBarang = [
             'Nama Barang' => $asset->nama_barang,
@@ -266,22 +295,21 @@ class ExportController extends Controller
         $isKendaraan = ! empty($detail?->nomor_polisi) || ! empty($detail?->nomor_rangka) || ! empty($detail?->nomor_bpkb);
         $jenisBarang = $isKendaraan ? 'Kendaraan Dinas' : 'Alat Kantor';
 
-        // Extract kabupaten name
         $kabkota = $settings['instansi_kabkota'] ?: 'Cilacap';
         $kabupaten = str_ireplace(['pemerintah kabupaten ', 'pemerintah kota ', 'kabupaten ', 'kota '], '', $kabkota);
 
         $html = view('exports.bast', [
             'asset' => $asset,
             'settings' => $settings,
-            'nomorSurat' => $nomorSurat,
+            'nomorSurat' => $metadata['nomor_surat'],
             'tanggalFormatted' => $tanggalFormatted,
             'tanggalTerbilang' => $tanggalTerbilang,
-            'pihak1Nama' => $pihak1Nama,
-            'pihak1Jabatan' => $pihak1Jabatan,
-            'pihak1Nip' => $pihak1Nip,
-            'pihak2Nama' => $pihak2Nama,
-            'pihak2Jabatan' => $pihak2Jabatan,
-            'pihak2Nip' => $pihak2Nip,
+            'pihak1Nama' => $metadata['pihak1_nama'],
+            'pihak1Jabatan' => $metadata['pihak1_jabatan'],
+            'pihak1Nip' => $metadata['pihak1_nip'],
+            'pihak2Nama' => $metadata['pihak2_nama'],
+            'pihak2Jabatan' => $metadata['pihak2_jabatan'],
+            'pihak2Nip' => $metadata['pihak2_nip'],
             'rincianBarang' => $rincianBarang,
             'jenisBarang' => $jenisBarang,
             'kabupaten' => $kabupaten,
@@ -295,34 +323,20 @@ class ExportController extends Controller
         $filename = 'BAST_'.str_replace(' ', '_', $asset->nama_barang).'.pdf';
         $pdfContent = $mpdf->Output($filename, 'S');
 
-        // Save to storage
         $storagePath = 'generated-documents/'.$asset->id.'/bast_'.time().'.pdf';
         Storage::disk('local')->put($storagePath, $pdfContent);
 
-        // Upsert generated document record
         AssetGeneratedDocument::updateOrCreate(
             ['asset_id' => $asset->id, 'jenis' => 'bast'],
             [
                 'path' => $storagePath,
                 'filename' => $filename,
-                'metadata' => [
-                    'nomor_surat' => $nomorSurat,
-                    'tanggal' => $tanggalRaw,
-                    'pihak1_nama' => $pihak1Nama,
-                    'pihak1_jabatan' => $pihak1Jabatan,
-                    'pihak1_nip' => $pihak1Nip,
-                    'pihak2_nama' => $pihak2Nama,
-                    'pihak2_jabatan' => $pihak2Jabatan,
-                    'pihak2_nip' => $pihak2Nip,
-                ],
-                'generated_by' => auth()->id(),
+                'metadata' => $metadata,
+                'generated_by' => $generatedBy,
             ]
         );
 
-        return response($pdfContent, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="'.$filename.'"',
-        ]);
+        return [$pdfContent, $filename];
     }
 
     private function tanggalTerbilang(string $date): string
