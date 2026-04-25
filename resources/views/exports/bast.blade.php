@@ -83,7 +83,7 @@
             <td class="no">1.</td>
             <td class="nama">{{ $pihak1Nama }}</td>
             <td class="sep">:</td>
-            <td>{{ $pihak1Jabatan }} selaku Pengguna Barang Milik Daerah, selanjutnya disebut <strong>PIHAK PERTAMA.</strong></td>
+            <td>{{ $pihak1Jabatan }} selaku {{ $pihak1Peran }} Milik Daerah, selanjutnya disebut <strong>PIHAK PERTAMA.</strong></td>
         </tr>
         <tr><td colspan="4" style="height: 3mm;"></td></tr>
         <tr>
@@ -136,31 +136,31 @@
     <!-- TTD -->
     <table style="width: 100%; margin-top: 8mm; line-height: 1.2;">
         <tr>
-            <td style="width: 50%;"></td>
-            <td style="width: 50%; text-align: left;">
-                {{ $settings['ttd_kota'] ?: 'Cilacap' }}, {{ $tanggalFormatted }}
+            <td style="width: 50%; vertical-align: top;">
+                <table style="border-collapse: collapse;">
+                    <tr><td style="text-align: left; padding: 0;">&nbsp;</td></tr>
+                    <tr><td style="text-align: left; padding: 0;">PIHAK KEDUA</td></tr>
+                    <tr><td style="height: 28mm; padding: 0;"></td></tr>
+                    <tr><td style="text-align: left; padding: 0;">
+                        <span class="ttd-name">{{ $pihak2Nama }}</span><br>
+                        @if($pihak2Nip)
+                        <span class="ttd-nip">NIP. {{ $pihak2Nip }}</span>
+                        @endif
+                    </td></tr>
+                </table>
             </td>
-        </tr>
-        <tr>
-            <td style="width: 50%; text-align: left;">PIHAK KEDUA</td>
-            <td style="width: 50%; text-align: left;">PIHAK PERTAMA</td>
-        </tr>
-        <tr>
-            <td style="height: 30mm; width: 50%;"></td>
-            <td style="height: 30mm; width: 50%;"></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;">
-                <span class="ttd-name">{{ $pihak2Nama }}</span><br>
-                @if($pihak2Nip)
-                <span class="ttd-nip">NIP. {{ $pihak2Nip }}</span>
-                @endif
-            </td>
-            <td style="text-align: left;">
-                <span class="ttd-name">{{ $pihak1Nama }}</span><br>
-                @if($pihak1Nip)
-                <span class="ttd-nip">NIP. {{ $pihak1Nip }}</span>
-                @endif
+            <td style="width: 50%; vertical-align: top;">
+                <table align="right" style="border-collapse: collapse;">
+                    <tr><td style="text-align: left; padding: 0;">{{ $settings['ttd_kota'] ?: 'Cilacap' }}, {{ $tanggalFormatted }}</td></tr>
+                    <tr><td style="text-align: left; padding: 0;">PIHAK PERTAMA</td></tr>
+                    <tr><td style="height: 28mm; padding: 0;"></td></tr>
+                    <tr><td style="text-align: left; padding: 0;">
+                        <span class="ttd-name">{{ $pihak1Nama }}</span><br>
+                        @if($pihak1Nip)
+                        <span class="ttd-nip">NIP. {{ $pihak1Nip }}</span>
+                        @endif
+                    </td></tr>
+                </table>
             </td>
         </tr>
     </table>

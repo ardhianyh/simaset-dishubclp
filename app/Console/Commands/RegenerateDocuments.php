@@ -106,6 +106,7 @@ class RegenerateDocuments extends Command
             'pihak1_nama' => $m['pihak1_nama'] ?? '',
             'pihak1_jabatan' => $m['pihak1_jabatan'] ?? '',
             'pihak1_nip' => $m['pihak1_nip'] ?? '',
+            'pihak1_peran' => $m['pihak1_peran'] ?? 'Pengguna Barang',
             'pihak2_nama' => $m['pihak2_nama'] ?? ($asset->pj_nama ?? ''),
             'pihak2_jabatan' => $m['pihak2_jabatan'] ?? '',
             'pihak2_nip' => $m['pihak2_nip'] ?? ($asset->pj_nip ?? ''),

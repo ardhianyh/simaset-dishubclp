@@ -254,6 +254,7 @@ class ExportController extends Controller
             'pihak1_nama' => $request->input('pihak1_nama', $settings['ttd_kepala_nama']),
             'pihak1_jabatan' => $request->input('pihak1_jabatan', 'Kepala '.($settings['instansi_unit'] ?: 'Dinas')),
             'pihak1_nip' => $request->input('pihak1_nip', $settings['ttd_kepala_nip']),
+            'pihak1_peran' => trim((string) $request->input('pihak1_peran', 'Pengguna Barang')) ?: 'Pengguna Barang',
             'pihak2_nama' => $request->input('pihak2_nama', $asset->pj_nama),
             'pihak2_jabatan' => $request->input('pihak2_jabatan', ''),
             'pihak2_nip' => $request->input('pihak2_nip', $asset->pj_nip ?? ''),
@@ -270,7 +271,7 @@ class ExportController extends Controller
     /**
      * Render, persist, and upsert a BAST PDF.
      *
-     * @param  array{nomor_surat: string, tanggal: string, pihak1_nama: string, pihak1_jabatan: string, pihak1_nip: ?string, pihak2_nama: string, pihak2_jabatan: string, pihak2_nip: ?string}  $metadata
+     * @param  array{nomor_surat: string, tanggal: string, pihak1_nama: string, pihak1_jabatan: string, pihak1_nip: ?string, pihak1_peran: string, pihak2_nama: string, pihak2_jabatan: string, pihak2_nip: ?string}  $metadata
      * @return array{0: string, 1: string} [pdfContent, filename]
      */
     public function generateBastPdf(Asset $asset, array $metadata, ?int $generatedBy = null): array
@@ -307,6 +308,7 @@ class ExportController extends Controller
             'pihak1Nama' => $metadata['pihak1_nama'],
             'pihak1Jabatan' => $metadata['pihak1_jabatan'],
             'pihak1Nip' => $metadata['pihak1_nip'],
+            'pihak1Peran' => $metadata['pihak1_peran'] ?? 'Pengguna Barang',
             'pihak2Nama' => $metadata['pihak2_nama'],
             'pihak2Jabatan' => $metadata['pihak2_jabatan'],
             'pihak2Nip' => $metadata['pihak2_nip'],

@@ -30,6 +30,7 @@ export default function BastDialog({ asset, generatedDocument }: Props) {
     const [pihak1Nama, setPihak1Nama] = useState('');
     const [pihak1Jabatan, setPihak1Jabatan] = useState('');
     const [pihak1Nip, setPihak1Nip] = useState('');
+    const [pihak1Peran, setPihak1Peran] = useState('Pengguna Barang');
     const [pihak2Nama, setPihak2Nama] = useState(asset.pj_nama || '');
     const [pihak2Jabatan, setPihak2Jabatan] = useState('');
     const [pihak2Nip, setPihak2Nip] = useState(asset.pj_nip || '');
@@ -59,6 +60,7 @@ export default function BastDialog({ asset, generatedDocument }: Props) {
             pihak1_nama: pihak1Nama,
             pihak1_jabatan: pihak1Jabatan,
             pihak1_nip: pihak1Nip,
+            pihak1_peran: pihak1Peran,
             pihak2_nama: pihak2Nama,
             pihak2_jabatan: pihak2Jabatan,
             pihak2_nip: pihak2Nip,
@@ -183,6 +185,17 @@ export default function BastDialog({ asset, generatedDocument }: Props) {
                                             placeholder="NIP"
                                         />
                                     </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Peran</Label>
+                                    <Input
+                                        value={pihak1Peran}
+                                        onChange={(e) => setPihak1Peran(e.target.value)}
+                                        placeholder="Pengguna Barang"
+                                    />
+                                    <p className="text-muted-foreground text-xs">
+                                        Muncul di kalimat: "{pihak1Jabatan || '[Jabatan]'} selaku <strong>{pihak1Peran || 'Pengguna Barang'}</strong> Milik Daerah..."
+                                    </p>
                                 </div>
                             </div>
 
