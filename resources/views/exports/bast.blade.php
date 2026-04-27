@@ -141,7 +141,7 @@
                     <tr><td style="text-align: left; padding: 0;">&nbsp;</td></tr>
                     <tr><td style="text-align: left; padding: 0;">PIHAK KEDUA</td></tr>
                     <tr><td style="height: 28mm; padding: 0;"></td></tr>
-                    <tr><td style="text-align: left; padding: 0;">
+                    <tr><td style="text-align: left; padding: 0; white-space: nowrap;">
                         <span class="ttd-name">{{ $pihak2Nama }}</span><br>
                         @if($pihak2Nip)
                         <span class="ttd-nip">NIP. {{ $pihak2Nip }}</span>
@@ -154,7 +154,7 @@
                     <tr><td style="text-align: left; padding: 0;">{{ $settings['ttd_kota'] ?: 'Cilacap' }}, {{ $tanggalFormatted }}</td></tr>
                     <tr><td style="text-align: left; padding: 0;">PIHAK PERTAMA</td></tr>
                     <tr><td style="height: 28mm; padding: 0;"></td></tr>
-                    <tr><td style="text-align: left; padding: 0;">
+                    <tr><td style="text-align: left; padding: 0; white-space: nowrap;">
                         <span class="ttd-name">{{ $pihak1Nama }}</span><br>
                         @if($pihak1Nip)
                         <span class="ttd-nip">NIP. {{ $pihak1Nip }}</span>

@@ -44,7 +44,7 @@
     <tr>
         <td style="width: 35mm; white-space: nowrap;">Nama</td>
         <td style="width: 8mm; text-align: center;">:</td>
-        <td>{{ $nama }}</td>
+        <td style="white-space: nowrap;">{{ $nama }}</td>
     </tr>
     <tr>
         <td style="width: 35mm; white-space: nowrap; vertical-align: top;">Jabatan</td>
@@ -96,7 +96,7 @@
     <tr>
         <td width="50%"></td>
         <td width="50%" align="left">
-            <p style="text-align: left; margin: 0; font-weight: bold; text-decoration: underline;">{{ $nama }}</p>
+            <p style="text-align: left; margin: 0; font-weight: bold; text-decoration: underline; white-space: nowrap;">{{ $nama }}</p>
             @if($nip)
             <p style="text-align: left; margin: 0;">NIP. {{ $nip }}</p>
             @endif
