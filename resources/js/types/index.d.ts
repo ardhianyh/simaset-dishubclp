@@ -8,9 +8,20 @@ export interface User {
     telepon?: string;
     is_active: boolean;
     wilayahs?: Wilayah[];
+    ruangans?: Ruangan[];
 }
 
 export interface Wilayah {
+    id: number;
+    nama: string;
+    deskripsi?: string;
+    users_count?: number;
+    users?: User[];
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface Ruangan {
     id: number;
     nama: string;
     deskripsi?: string;
@@ -52,6 +63,8 @@ export interface Asset {
     nomor_register: string;
     wilayah_id?: number;
     wilayah?: Wilayah;
+    ruangan_id?: number;
+    ruangan?: Ruangan;
     pj_nama: string;
     pj_nip?: string;
     pj_telepon?: string;

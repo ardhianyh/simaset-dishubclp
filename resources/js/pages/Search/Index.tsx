@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { PaginatedData, Asset, Wilayah } from '@/types';
+import { PaginatedData, Asset, Ruangan } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -25,12 +25,12 @@ import { FormEvent, useState } from 'react';
 
 interface Props {
     assets: PaginatedData<Asset>;
-    wilayahs: Wilayah[];
+    ruangans: Ruangan[];
     kibTypes: Record<string, string>;
     filters: {
         search?: string;
         kib_type?: string;
-        wilayah_id?: string;
+        ruangan_id?: string;
         pj_nama?: string;
     };
 }
@@ -53,7 +53,7 @@ const KIB_BADGE_COLORS: Record<string, string> = {
     L: 'bg-cyan-100 text-cyan-800',
 };
 
-export default function SearchIndex({ assets, wilayahs, kibTypes, filters }: Props) {
+export default function SearchIndex({ assets, ruangans, kibTypes, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [pjNama, setPjNama] = useState(filters.pj_nama || '');
 
@@ -61,7 +61,7 @@ export default function SearchIndex({ assets, wilayahs, kibTypes, filters }: Pro
         return {
             search: filters.search || undefined,
             kib_type: filters.kib_type || undefined,
-            wilayah_id: filters.wilayah_id || undefined,
+            ruangan_id: filters.ruangan_id || undefined,
             pj_nama: filters.pj_nama || undefined,
             ...overrides,
         };
@@ -81,9 +81,9 @@ export default function SearchIndex({ assets, wilayahs, kibTypes, filters }: Pro
         }), { preserveState: true });
     }
 
-    function handleWilayahFilter(value: string) {
+    function handleRuanganFilter(value: string) {
         router.get('/search', buildParams({
-            wilayah_id: value === 'all' ? undefined : value,
+            ruangan_id: value === 'all' ? undefined : value,
         }), { preserveState: true });
     }
 
@@ -93,7 +93,7 @@ export default function SearchIndex({ assets, wilayahs, kibTypes, filters }: Pro
         router.get('/search', {}, { preserveState: true });
     }
 
-    const hasFilters = filters.search || filters.kib_type || filters.wilayah_id || filters.pj_nama;
+    const hasFilters = filters.search || filters.kib_type || filters.ruangan_id || filters.pj_nama;
 
     return (
         <AuthenticatedLayout header="Pencarian Aset">
@@ -128,14 +128,14 @@ export default function SearchIndex({ assets, wilayahs, kibTypes, filters }: Pro
                             ))}
                         </SelectContent>
                     </Select>
-                    <Select value={filters.wilayah_id || 'all'} onValueChange={handleWilayahFilter}>
+                    <Select value={filters.ruangan_id || 'all'} onValueChange={handleRuanganFilter}>
                         <SelectTrigger className="w-44">
-                            <SelectValue placeholder="Semua Wilayah" />
+                            <SelectValue placeholder="Semua Ruangan" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">Semua Wilayah</SelectItem>
-                            {wilayahs.map((w) => (
-                                <SelectItem key={w.id} value={String(w.id)}>{w.nama}</SelectItem>
+                            <SelectItem value="all">Semua Ruangan</SelectItem>
+                            {ruangans.map((r) => (
+                                <SelectItem key={r.id} value={String(r.id)}>{r.nama}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -162,7 +162,7 @@ export default function SearchIndex({ assets, wilayahs, kibTypes, filters }: Pro
                                 <TableHead>Nama Barang</TableHead>
                                 <TableHead>Jenis KIB</TableHead>
                                 <TableHead>Kode Barang</TableHead>
-                                <TableHead>Wilayah</TableHead>
+                                <TableHead>Ruangan</TableHead>
                                 <TableHead>PJ</TableHead>
                                 <TableHead className="text-right">Harga</TableHead>
                                 <TableHead className="w-16 text-right">Aksi</TableHead>
@@ -189,8 +189,8 @@ export default function SearchIndex({ assets, wilayahs, kibTypes, filters }: Pro
                                         </TableCell>
                                         <TableCell className="text-sm">{asset.kode_barang}</TableCell>
                                         <TableCell>
-                                            {asset.wilayah ? (
-                                                <Badge variant="outline">{asset.wilayah.nama}</Badge>
+                                            {asset.ruangan ? (
+                                                <Badge variant="outline">{asset.ruangan.nama}</Badge>
                                             ) : (
                                                 <span className="text-muted-foreground">-</span>
                                             )}

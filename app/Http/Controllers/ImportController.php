@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asset;
-use App\Models\Wilayah;
+use App\Models\Ruangan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -34,7 +34,7 @@ class ImportController extends Controller
             'nama_barang',
             'kode_barang',
             'nomor_register',
-            'wilayah_nama',
+            'ruangan_nama',
             'pj_nama',
             'pj_nip',
             'pj_telepon',
@@ -53,7 +53,7 @@ class ImportController extends Controller
             'nama_barang' => 'Nama Barang',
             'kode_barang' => 'Kode Barang',
             'nomor_register' => 'Nomor Register',
-            'wilayah_nama' => 'Nama Wilayah',
+            'ruangan_nama' => 'Nama Ruangan',
             'pj_nama' => 'Nama PJ',
             'pj_nip' => 'NIP PJ',
             'pj_telepon' => 'Telepon PJ',
@@ -126,7 +126,7 @@ class ImportController extends Controller
             'Laptop Dell Latitude 5520',
             '02.06.02.01.37',
             '0001',
-            'Kecamatan Barat',
+            'Ruang Tata Usaha',
             'Budi Santoso',
             '198501012010011001',
             '081234567890',
@@ -156,7 +156,7 @@ class ImportController extends Controller
             'nama_barang' => ['required', 'string', 'max:500'],
             'kode_barang' => ['required', 'string', 'max:50'],
             'nomor_register' => ['required', 'string', 'max:50'],
-            'wilayah_id' => ['nullable', 'exists:wilayahs,id'],
+            'ruangan_id' => ['nullable', 'exists:ruangans,id'],
             'pj_nama' => ['required', 'string', 'max:255'],
             'pj_nip' => ['nullable', 'string', 'max:50'],
             'pj_telepon' => ['nullable', 'string', 'max:20'],
@@ -314,7 +314,7 @@ class ImportController extends Controller
             ['1. Isi data mulai dari baris ke-4 di sheet "Template Import" (baris 3 adalah contoh, boleh dihapus/ditimpa)'],
             ['2. Baris 1 berisi kode kolom (JANGAN dihapus/diubah)'],
             ['3. Baris 2 berisi nama kolom yang ditandai * adalah kolom wajib'],
-            ['4. Kolom "Nama Wilayah" harus sesuai dengan nama wilayah yang terdaftar di sistem'],
+            ['4. Kolom "Nama Ruangan" harus sesuai dengan nama ruangan yang terdaftar di sistem'],
             ['5. Kolom "Asal Usul" harus salah satu dari: ' . implode(', ', Asset::ASAL_USUL_OPTIONS)],
             ['6. Format tanggal: YYYY-MM-DD (contoh: 2023-01-15)'],
             ['7. Kolom "Harga" berupa angka tanpa titik/koma (contoh: 15000000)'],
@@ -396,14 +396,14 @@ class ImportController extends Controller
             return back()->with('error', 'Header kolom tidak sesuai template. Download template terbaru dan coba lagi.');
         }
 
-        // Build wilayah lookup
-        $wilayahLookup = Wilayah::pluck('id', 'nama')->toArray();
+        // Build ruangan lookup
+        $ruanganLookup = Ruangan::pluck('id', 'nama')->toArray();
 
-        // Determine allowed wilayah IDs for staff
+        // Determine allowed ruangan IDs for staff
         $user = auth()->user();
-        $allowedWilayahIds = null;
+        $allowedRuanganIds = null;
         if ($user->role === 'staff') {
-            $allowedWilayahIds = $user->wilayahs()->pluck('wilayahs.id')->toArray();
+            $allowedRuanganIds = $user->ruangans()->pluck('ruangans.id')->toArray();
         }
 
         $baseColumns = $this->baseColumns();
@@ -445,28 +445,28 @@ class ImportController extends Controller
                 $data[$col] = $rowValues[$i] ?? '';
             }
 
-            // Resolve wilayah_nama to wilayah_id
-            $wilayahNama = $data['wilayah_nama'] ?? '';
-            $wilayahId = null;
-            $wilayahError = null;
+            // Resolve ruangan_nama to ruangan_id
+            $ruanganNama = $data['ruangan_nama'] ?? '';
+            $ruanganId = null;
+            $ruanganError = null;
 
-            if ($wilayahNama !== '') {
-                $wilayahId = $wilayahLookup[$wilayahNama] ?? null;
-                if (! $wilayahId) {
-                    $wilayahError = "Wilayah \"{$wilayahNama}\" tidak ditemukan.";
-                } elseif ($allowedWilayahIds !== null && ! in_array($wilayahId, $allowedWilayahIds)) {
-                    $wilayahError = "Anda tidak memiliki akses ke wilayah \"{$wilayahNama}\".";
-                    $wilayahId = null;
+            if ($ruanganNama !== '') {
+                $ruanganId = $ruanganLookup[$ruanganNama] ?? null;
+                if (! $ruanganId) {
+                    $ruanganError = "Ruangan \"{$ruanganNama}\" tidak ditemukan.";
+                } elseif ($allowedRuanganIds !== null && ! in_array($ruanganId, $allowedRuanganIds)) {
+                    $ruanganError = "Anda tidak memiliki akses ke ruangan \"{$ruanganNama}\".";
+                    $ruanganId = null;
                 }
             }
 
             // Build base data
             $baseData = [];
             foreach ($baseColumns as $col) {
-                if ($col === 'wilayah_nama') continue;
+                if ($col === 'ruangan_nama') continue;
                 $baseData[$col] = $data[$col] !== '' ? $data[$col] : null;
             }
-            $baseData['wilayah_id'] = $wilayahId;
+            $baseData['ruangan_id'] = $ruanganId;
 
             // Build detail data
             $detailData = [];
@@ -490,8 +490,8 @@ class ImportController extends Controller
 
             $rowErrors = [];
 
-            if ($wilayahError) {
-                $rowErrors[] = $wilayahError;
+            if ($ruanganError) {
+                $rowErrors[] = $ruanganError;
             }
             if ($baseValidator->fails()) {
                 foreach ($baseValidator->errors()->all() as $msg) {

@@ -26,7 +26,7 @@ export interface MapAsset {
     harga: number;
     latitude: number;
     longitude: number;
-    wilayah?: { id: number; nama: string } | null;
+    ruangan?: { id: number; nama: string } | null;
 }
 
 interface Props {
@@ -133,7 +133,7 @@ export default function MapView({ assets, className, onMarkerClick }: Props) {
                     </div>
                     <table style="font-size: 12px; border-collapse: collapse; width: 100%;">
                         <tr><td style="color: #666; padding: 2px 8px 2px 0;">Kode</td><td style="font-family: monospace;">${asset.kode_barang}</td></tr>
-                        <tr><td style="color: #666; padding: 2px 8px 2px 0;">Wilayah</td><td>${asset.wilayah?.nama || '-'}</td></tr>
+                        <tr><td style="color: #666; padding: 2px 8px 2px 0;">Ruangan</td><td>${asset.ruangan?.nama || '-'}</td></tr>
                         <tr><td style="color: #666; padding: 2px 8px 2px 0;">PJ</td><td>${asset.pj_nama}</td></tr>
                         <tr><td style="color: #666; padding: 2px 8px 2px 0;">Harga</td><td>${formatCurrency(asset.harga)}</td></tr>
                     </table>

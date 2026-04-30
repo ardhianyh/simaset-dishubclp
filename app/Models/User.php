@@ -51,4 +51,10 @@ class User extends Authenticatable
         return $this->belongsToMany(Wilayah::class, 'user_wilayah')
             ->withTimestamps();
     }
+
+    public function ruangans(): BelongsToMany
+    {
+        return $this->belongsToMany(Ruangan::class, 'user_ruangan')
+            ->withTimestamps();
+    }
 }

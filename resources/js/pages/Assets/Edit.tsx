@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
-import { Asset, Wilayah, KibType } from '@/types';
+import { Asset, Ruangan, KibType } from '@/types';
 import AssetForm from './Partials/AssetForm';
 import { FormEvent, useState } from 'react';
 
@@ -8,7 +8,7 @@ interface Props {
     asset: Asset;
     kibType: KibType;
     kibLabel: string;
-    wilayahs: Wilayah[];
+    ruangans: Ruangan[];
     asalUsulOptions: string[];
 }
 
@@ -25,7 +25,7 @@ function extractDetail(asset: Asset, kibType: KibType): DetailData {
     return rest;
 }
 
-export default function AssetEdit({ asset, kibType, kibLabel, wilayahs, asalUsulOptions }: Props) {
+export default function AssetEdit({ asset, kibType, kibLabel, ruangans, asalUsulOptions }: Props) {
     const kibSlug = `kib-${kibType.toLowerCase()}`;
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -34,7 +34,7 @@ export default function AssetEdit({ asset, kibType, kibLabel, wilayahs, asalUsul
         nama_barang: asset.nama_barang,
         kode_barang: asset.kode_barang,
         nomor_register: asset.nomor_register,
-        wilayah_id: asset.wilayah_id ?? null,
+        ruangan_id: asset.ruangan_id ?? null,
         pj_nama: asset.pj_nama,
         pj_nip: asset.pj_nip ?? '',
         pj_telepon: asset.pj_telepon ?? '',
@@ -74,7 +74,7 @@ export default function AssetEdit({ asset, kibType, kibLabel, wilayahs, asalUsul
             <AssetForm
                 kibType={kibType}
                 kibLabel={kibLabel}
-                wilayahs={wilayahs}
+                ruangans={ruangans}
                 asalUsulOptions={asalUsulOptions}
                 data={data}
                 setData={setData}

@@ -75,11 +75,11 @@ class ExportController extends Controller
 
         $detailRelation = $this->getDetailRelation($kibType);
 
-        $query = Asset::with(['wilayah:id,nama', $detailRelation])
+        $query = Asset::with(['ruangan:id,nama', $detailRelation])
             ->where('kib_type', $kibType);
 
-        if ($wilayahId = $request->input('wilayah_id')) {
-            $query->where('wilayah_id', $wilayahId);
+        if ($ruanganId = $request->input('ruangan_id')) {
+            $query->where('ruangan_id', $ruanganId);
         }
 
         $assets = $query->orderBy('kode_barang')->get();

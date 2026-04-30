@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard,
     Map,
+    DoorOpen,
     LandPlot,
     Wrench,
     Building2,
@@ -160,10 +161,10 @@ export default function AuthenticatedLayout({
                             <SidebarGroupContent>
                                 <SidebarMenu>
                                     <SidebarMenuItem>
-                                        <SidebarMenuButton asChild isActive={isActive('/wilayah')}>
-                                            <Link href="/wilayah">
-                                                <Map />
-                                                <span>Wilayah</span>
+                                        <SidebarMenuButton asChild isActive={isActive('/ruangan')}>
+                                            <Link href="/ruangan">
+                                                <DoorOpen />
+                                                <span>Ruangan</span>
                                             </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>

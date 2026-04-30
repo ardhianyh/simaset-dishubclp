@@ -1,13 +1,13 @@
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
-import { Wilayah, KibType } from '@/types';
+import { Ruangan, KibType } from '@/types';
 import AssetForm from './Partials/AssetForm';
 import { FormEvent, useState } from 'react';
 
 interface Props {
     kibType: KibType;
     kibLabel: string;
-    wilayahs: Wilayah[];
+    ruangans: Ruangan[];
     asalUsulOptions: string[];
 }
 
@@ -18,7 +18,7 @@ interface FormData {
     nama_barang: string;
     kode_barang: string;
     nomor_register: string;
-    wilayah_id: number | null;
+    ruangan_id: number | null;
     pj_nama: string;
     pj_nip: string;
     pj_telepon: string;
@@ -42,7 +42,7 @@ function getDefaultDetail(kibType: KibType): DetailData {
     }
 }
 
-export default function AssetCreate({ kibType, kibLabel, wilayahs, asalUsulOptions }: Props) {
+export default function AssetCreate({ kibType, kibLabel, ruangans, asalUsulOptions }: Props) {
     const kibSlug = `kib-${kibType.toLowerCase()}`;
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -51,7 +51,7 @@ export default function AssetCreate({ kibType, kibLabel, wilayahs, asalUsulOptio
         nama_barang: '',
         kode_barang: '',
         nomor_register: '',
-        wilayah_id: null,
+        ruangan_id: null,
         pj_nama: '',
         pj_nip: '',
         pj_telepon: '',
@@ -91,7 +91,7 @@ export default function AssetCreate({ kibType, kibLabel, wilayahs, asalUsulOptio
             <AssetForm
                 kibType={kibType}
                 kibLabel={kibLabel}
-                wilayahs={wilayahs}
+                ruangans={ruangans}
                 asalUsulOptions={asalUsulOptions}
                 data={data}
                 setData={setData}

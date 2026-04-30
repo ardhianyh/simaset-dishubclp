@@ -6,10 +6,9 @@ use App\Models\Asset;
 use App\Models\AssetDisposal;
 use App\Models\AssetDisposalDocument;
 use App\Models\AssetGeneratedDocument;
-use App\Models\Wilayah;
+use App\Models\Ruangan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -38,15 +37,15 @@ class AssetController extends Controller
         };
     }
 
-    private function getWilayahsForUser(): \Illuminate\Database\Eloquent\Collection
+    private function getRuangansForUser(): \Illuminate\Database\Eloquent\Collection
     {
         $user = auth()->user();
 
         if ($user->role === 'admin') {
-            return Wilayah::orderBy('nama')->get(['id', 'nama']);
+            return Ruangan::orderBy('nama')->get(['id', 'nama']);
         }
 
-        return $user->wilayahs()->orderBy('nama')->get(['wilayahs.id', 'nama']);
+        return $user->ruangans()->orderBy('nama')->get(['ruangans.id', 'nama']);
     }
 
     private function baseValidationRules(): array
@@ -55,14 +54,14 @@ class AssetController extends Controller
             'nama_barang' => ['required', 'string', 'max:500'],
             'kode_barang' => ['required', 'string', 'max:50'],
             'nomor_register' => ['required', 'string', 'max:50'],
-            'wilayah_id' => ['nullable', 'exists:wilayahs,id'],
+            'ruangan_id' => ['nullable', 'exists:ruangans,id'],
             'pj_nama' => ['required', 'string', 'max:255'],
             'pj_nip' => ['nullable', 'string', 'max:50'],
             'pj_telepon' => ['nullable', 'string', 'max:20'],
             'pj_alamat' => ['nullable', 'string', 'max:500'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
-            'asal_usul' => ['required', 'in:' . implode(',', Asset::ASAL_USUL_OPTIONS)],
+            'asal_usul' => ['required', 'in:'.implode(',', Asset::ASAL_USUL_OPTIONS)],
             'harga' => ['required', 'numeric', 'min:0'],
             'keterangan' => ['nullable', 'string', 'max:2000'],
         ];
@@ -73,7 +72,7 @@ class AssetController extends Controller
         return match ($kibType) {
             'A' => [
                 'detail.luas_m2' => ['required', 'numeric', 'min:0'],
-                'detail.tahun_pengadaan' => ['required', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
+                'detail.tahun_pengadaan' => ['required', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
                 'detail.alamat' => ['required', 'string', 'max:2000'],
                 'detail.hak_tanah' => ['nullable', 'string', 'max:100'],
                 'detail.sertifikat_tanggal' => ['nullable', 'date'],
@@ -84,7 +83,7 @@ class AssetController extends Controller
                 'detail.merk_type' => ['nullable', 'string', 'max:255'],
                 'detail.ukuran_cc' => ['nullable', 'string', 'max:100'],
                 'detail.bahan' => ['nullable', 'string', 'max:100'],
-                'detail.tahun_pembelian' => ['required', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
+                'detail.tahun_pembelian' => ['required', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
                 'detail.nomor_pabrik' => ['nullable', 'string', 'max:100'],
                 'detail.nomor_rangka' => ['nullable', 'string', 'max:100'],
                 'detail.nomor_mesin' => ['nullable', 'string', 'max:100'],
@@ -123,10 +122,10 @@ class AssetController extends Controller
                 'detail.jenis' => ['nullable', 'string', 'max:255'],
                 'detail.ukuran' => ['nullable', 'string', 'max:255'],
                 'detail.jumlah' => ['required', 'integer', 'min:1'],
-                'detail.tahun_cetak' => ['required', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
+                'detail.tahun_cetak' => ['required', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
             ],
             'L' => [
-                'detail.tahun_pengadaan' => ['required', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
+                'detail.tahun_pengadaan' => ['required', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
                 'detail.judul_nama' => ['nullable', 'string', 'max:500'],
                 'detail.pencipta' => ['nullable', 'string', 'max:255'],
                 'detail.spesifikasi' => ['nullable', 'string', 'max:2000'],
@@ -140,20 +139,20 @@ class AssetController extends Controller
         $kibType = $this->resolveKibType($kibSlug);
         $detailRelation = $this->getDetailRelation($kibType);
 
-        $query = Asset::with(['wilayah:id,nama', $detailRelation])
+        $query = Asset::with(['ruangan:id,nama', $detailRelation])
             ->where('kib_type', $kibType);
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama_barang', 'ilike', "%{$search}%")
-                  ->orWhere('kode_barang', 'ilike', "%{$search}%")
-                  ->orWhere('nomor_register', 'ilike', "%{$search}%")
-                  ->orWhere('pj_nama', 'ilike', "%{$search}%");
+                    ->orWhere('kode_barang', 'ilike', "%{$search}%")
+                    ->orWhere('nomor_register', 'ilike', "%{$search}%")
+                    ->orWhere('pj_nama', 'ilike', "%{$search}%");
             });
         }
 
-        if ($wilayahId = $request->input('wilayah_id')) {
-            $query->where('wilayah_id', $wilayahId);
+        if ($ruanganId = $request->input('ruangan_id')) {
+            $query->where('ruangan_id', $ruanganId);
         }
 
         $assets = $query->orderBy('created_at', 'desc')
@@ -164,10 +163,10 @@ class AssetController extends Controller
             'assets' => $assets,
             'kibType' => $kibType,
             'kibLabel' => Asset::KIB_LABELS[$kibType],
-            'wilayahs' => Wilayah::orderBy('nama')->get(['id', 'nama']),
+            'ruangans' => Ruangan::orderBy('nama')->get(['id', 'nama']),
             'filters' => [
                 'search' => $search,
-                'wilayah_id' => $wilayahId,
+                'ruangan_id' => $ruanganId,
             ],
         ]);
     }
@@ -181,7 +180,7 @@ class AssetController extends Controller
         }
 
         $detailRelation = $this->getDetailRelation($kibType);
-        $asset->load(['wilayah:id,nama', $detailRelation, 'documents', 'creator:id,name', 'updater:id,name']);
+        $asset->load(['ruangan:id,nama', $detailRelation, 'documents', 'creator:id,name', 'updater:id,name']);
 
         $generatedDocuments = AssetGeneratedDocument::where('asset_id', $asset->id)
             ->get()
@@ -203,7 +202,7 @@ class AssetController extends Controller
         return Inertia::render('Assets/Create', [
             'kibType' => $kibType,
             'kibLabel' => Asset::KIB_LABELS[$kibType],
-            'wilayahs' => $this->getWilayahsForUser(),
+            'ruangans' => $this->getRuangansForUser(),
             'asalUsulOptions' => Asset::ASAL_USUL_OPTIONS,
         ]);
     }
@@ -215,12 +214,12 @@ class AssetController extends Controller
         $rules = array_merge($this->baseValidationRules(), $this->detailValidationRules($kibType));
         $validated = $request->validate($rules);
 
-        // Staff can only assign to their own wilayahs
+        // Staff can only assign to their own ruangans
         $user = auth()->user();
-        if ($user->role === 'staff' && ! empty($validated['wilayah_id'])) {
-            $allowedIds = $user->wilayahs()->pluck('wilayahs.id')->toArray();
-            if (! in_array($validated['wilayah_id'], $allowedIds)) {
-                abort(403, 'Anda tidak memiliki akses ke wilayah ini.');
+        if ($user->role === 'staff' && ! empty($validated['ruangan_id'])) {
+            $allowedIds = $user->ruangans()->pluck('ruangans.id')->toArray();
+            if (! in_array($validated['ruangan_id'], $allowedIds)) {
+                abort(403, 'Anda tidak memiliki akses ke ruangan ini.');
             }
         }
 
@@ -252,13 +251,13 @@ class AssetController extends Controller
         }
 
         $detailRelation = $this->getDetailRelation($kibType);
-        $asset->load(['wilayah:id,nama', $detailRelation]);
+        $asset->load(['ruangan:id,nama', $detailRelation]);
 
         return Inertia::render('Assets/Edit', [
             'asset' => $asset,
             'kibType' => $kibType,
             'kibLabel' => Asset::KIB_LABELS[$kibType],
-            'wilayahs' => $this->getWilayahsForUser(),
+            'ruangans' => $this->getRuangansForUser(),
             'asalUsulOptions' => Asset::ASAL_USUL_OPTIONS,
         ]);
     }
@@ -275,10 +274,10 @@ class AssetController extends Controller
         $validated = $request->validate($rules);
 
         $user = auth()->user();
-        if ($user->role === 'staff' && ! empty($validated['wilayah_id'])) {
-            $allowedIds = $user->wilayahs()->pluck('wilayahs.id')->toArray();
-            if (! in_array($validated['wilayah_id'], $allowedIds)) {
-                abort(403, 'Anda tidak memiliki akses ke wilayah ini.');
+        if ($user->role === 'staff' && ! empty($validated['ruangan_id'])) {
+            $allowedIds = $user->ruangans()->pluck('ruangans.id')->toArray();
+            if (! in_array($validated['ruangan_id'], $allowedIds)) {
+                abort(403, 'Anda tidak memiliki akses ke ruangan ini.');
             }
         }
 
@@ -315,7 +314,7 @@ class AssetController extends Controller
         }
 
         $validated = $request->validate([
-            'jenis' => ['required', 'in:' . implode(',', AssetDisposal::JENIS_OPTIONS)],
+            'jenis' => ['required', 'in:'.implode(',', AssetDisposal::JENIS_OPTIONS)],
             'alasan' => ['nullable', 'string', 'max:2000'],
             'nomor_sk' => ['nullable', 'string', 'max:255'],
             'tanggal' => ['required', 'date'],
@@ -336,7 +335,7 @@ class AssetController extends Controller
 
             foreach ($validated['dokumen'] as $doc) {
                 $file = $doc['file'];
-                $namaFile = Str::uuid() . '.' . $file->getClientOriginalExtension();
+                $namaFile = Str::uuid().'.'.$file->getClientOriginalExtension();
                 $path = $file->storeAs("disposal-documents/{$disposal->id}", $namaFile, 'local');
 
                 AssetDisposalDocument::create([
@@ -367,7 +366,7 @@ class AssetController extends Controller
             abort(404);
         }
 
-        $asset->load('wilayah:id,nama');
+        $asset->load('ruangan:id,nama');
 
         return Inertia::render('Assets/QrLabel', [
             'asset' => $asset,

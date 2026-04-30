@@ -2,19 +2,18 @@
 
 namespace App\Models;
 
-use App\Models\Scopes\WilayahScope;
+use App\Models\Scopes\RuanganScope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-#[ScopedBy(WilayahScope::class)]
+#[ScopedBy(RuanganScope::class)]
 class Asset extends Model
 {
     use HasFactory, LogsActivity, SoftDeletes;
@@ -34,6 +33,7 @@ class Asset extends Model
         'kode_barang',
         'nomor_register',
         'wilayah_id',
+        'ruangan_id',
         'pj_nama',
         'pj_nip',
         'pj_telepon',
@@ -87,6 +87,11 @@ class Asset extends Model
     public function wilayah(): BelongsTo
     {
         return $this->belongsTo(Wilayah::class);
+    }
+
+    public function ruangan(): BelongsTo
+    {
+        return $this->belongsTo(Ruangan::class);
     }
 
     public function creator(): BelongsTo

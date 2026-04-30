@@ -9,6 +9,7 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\PejabatController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicAssetController;
+use App\Http\Controllers\RuanganController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WilayahController;
@@ -68,6 +69,7 @@ Route::middleware('auth')->group(function () {
 // Admin-only routes
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('wilayah', WilayahController::class)->except(['show']);
+    Route::resource('ruangan', RuanganController::class)->except(['show']);
     Route::resource('users', UserController::class)->except(['show']);
     Route::resource('pejabats', PejabatController::class)->except(['show']);
 

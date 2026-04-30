@@ -1,4 +1,4 @@
-import { Wilayah, KibType } from '@/types';
+import { Ruangan, KibType } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,7 +23,7 @@ import KibLFields from './KibLFields';
 interface Props {
     kibType: KibType;
     kibLabel: string;
-    wilayahs: Wilayah[];
+    ruangans: Ruangan[];
     asalUsulOptions: string[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: Record<string, any>;
@@ -40,7 +40,7 @@ interface Props {
 export default function AssetForm({
     kibType,
     kibLabel,
-    wilayahs,
+    ruangans,
     asalUsulOptions,
     data,
     setData,
@@ -135,21 +135,21 @@ export default function AssetForm({
                     </div>
 
                     <div className="space-y-2">
-                        <Label>Wilayah</Label>
+                        <Label>Ruangan</Label>
                         <Select
-                            value={data.wilayah_id ? String(data.wilayah_id) : ''}
-                            onValueChange={(v) => setData('wilayah_id', v ? Number(v) : null)}
+                            value={data.ruangan_id ? String(data.ruangan_id) : ''}
+                            onValueChange={(v) => setData('ruangan_id', v ? Number(v) : null)}
                         >
                             <SelectTrigger className="max-w-sm">
-                                <SelectValue placeholder="Pilih wilayah" />
+                                <SelectValue placeholder="Pilih ruangan" />
                             </SelectTrigger>
                             <SelectContent>
-                                {wilayahs.map((w) => (
-                                    <SelectItem key={w.id} value={String(w.id)}>{w.nama}</SelectItem>
+                                {ruangans.map((r) => (
+                                    <SelectItem key={r.id} value={String(r.id)}>{r.nama}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
-                        {errors.wilayah_id && <p className="text-sm text-red-600">{errors.wilayah_id}</p>}
+                        {errors.ruangan_id && <p className="text-sm text-red-600">{errors.ruangan_id}</p>}
                     </div>
 
                     <div className="space-y-2">

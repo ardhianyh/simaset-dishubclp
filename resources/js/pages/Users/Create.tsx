@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Wilayah } from '@/types';
+import { Ruangan } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,10 +17,10 @@ import { Badge } from '@/components/ui/badge';
 import { FormEvent } from 'react';
 
 interface Props {
-    wilayahs: Wilayah[];
+    ruangans: Ruangan[];
 }
 
-export default function UserCreate({ wilayahs }: Props) {
+export default function UserCreate({ ruangans }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         nip: '',
@@ -29,7 +29,7 @@ export default function UserCreate({ wilayahs }: Props) {
         role: 'staff' as 'admin' | 'staff',
         telepon: '',
         is_active: true,
-        wilayah_ids: [] as number[],
+        ruangan_ids: [] as number[],
     });
 
     function handleSubmit(e: FormEvent) {
@@ -37,11 +37,11 @@ export default function UserCreate({ wilayahs }: Props) {
         post('/users');
     }
 
-    function toggleWilayah(id: number) {
-        setData('wilayah_ids',
-            data.wilayah_ids.includes(id)
-                ? data.wilayah_ids.filter((wId) => wId !== id)
-                : [...data.wilayah_ids, id]
+    function toggleRuangan(id: number) {
+        setData('ruangan_ids',
+            data.ruangan_ids.includes(id)
+                ? data.ruangan_ids.filter((wId) => wId !== id)
+                : [...data.ruangan_ids, id]
         );
     }
 
@@ -143,17 +143,17 @@ export default function UserCreate({ wilayahs }: Props) {
                             </Label>
                         </div>
 
-                        {data.role === 'staff' && wilayahs.length > 0 && (
+                        {data.role === 'staff' && ruangans.length > 0 && (
                             <div className="space-y-2">
-                                <Label>Wilayah Afiliasi</Label>
+                                <Label>Ruangan Afiliasi</Label>
                                 <div className="rounded-md border p-3">
                                     <div className="space-y-2">
-                                        {wilayahs.map((w) => (
+                                        {ruangans.map((w) => (
                                             <div key={w.id} className="flex items-center gap-2">
                                                 <Checkbox
                                                     id={`w-${w.id}`}
-                                                    checked={data.wilayah_ids.includes(w.id)}
-                                                    onCheckedChange={() => toggleWilayah(w.id)}
+                                                    checked={data.ruangan_ids.includes(w.id)}
+                                                    onCheckedChange={() => toggleRuangan(w.id)}
                                                 />
                                                 <Label htmlFor={`w-${w.id}`} className="cursor-pointer font-normal">
                                                     {w.nama}
@@ -161,10 +161,10 @@ export default function UserCreate({ wilayahs }: Props) {
                                             </div>
                                         ))}
                                     </div>
-                                    {data.wilayah_ids.length > 0 && (
+                                    {data.ruangan_ids.length > 0 && (
                                         <div className="mt-3 flex flex-wrap gap-1 border-t pt-3">
-                                            {data.wilayah_ids.map((id) => {
-                                                const w = wilayahs.find((w) => w.id === id);
+                                            {data.ruangan_ids.map((id) => {
+                                                const w = ruangans.find((w) => w.id === id);
                                                 return w ? (
                                                     <Badge key={id} variant="secondary">{w.nama}</Badge>
                                                 ) : null;
@@ -172,7 +172,7 @@ export default function UserCreate({ wilayahs }: Props) {
                                         </div>
                                     )}
                                 </div>
-                                {errors.wilayah_ids && <p className="text-sm text-red-600">{errors.wilayah_ids}</p>}
+                                {errors.ruangan_ids && <p className="text-sm text-red-600">{errors.ruangan_ids}</p>}
                             </div>
                         )}
 

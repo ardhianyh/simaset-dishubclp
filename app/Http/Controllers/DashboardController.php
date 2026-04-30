@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asset;
-use App\Models\Wilayah;
-use Illuminate\Support\Facades\DB;
+use App\Models\Ruangan;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -29,21 +28,22 @@ class DashboardController extends Controller
             ];
         }
 
-        // Per wilayah: count and total value
-        $wilayahStats = Asset::select('wilayah_id')
+        // Per ruangan: count and total value
+        $ruanganStats = Asset::select('ruangan_id')
             ->selectRaw('COUNT(*) as count')
             ->selectRaw('COALESCE(SUM(harga), 0) as total_value')
-            ->whereNotNull('wilayah_id')
-            ->groupBy('wilayah_id')
+            ->whereNotNull('ruangan_id')
+            ->groupBy('ruangan_id')
             ->get()
-            ->keyBy('wilayah_id');
+            ->keyBy('ruangan_id');
 
-        $wilayahs = Wilayah::orderBy('nama')->get(['id', 'nama']);
-        $perWilayah = $wilayahs->map(function ($w) use ($wilayahStats) {
-            $stat = $wilayahStats->get($w->id);
+        $ruangans = Ruangan::orderBy('nama')->get(['id', 'nama']);
+        $perRuangan = $ruangans->map(function ($r) use ($ruanganStats) {
+            $stat = $ruanganStats->get($r->id);
+
             return [
-                'id' => $w->id,
-                'nama' => $w->nama,
+                'id' => $r->id,
+                'nama' => $r->nama,
                 'count' => $stat ? (int) $stat->count : 0,
                 'total_value' => $stat ? (float) $stat->total_value : 0,
             ];
@@ -54,16 +54,16 @@ class DashboardController extends Controller
         $totalValue = collect($perKib)->sum('total_value');
 
         // Assets with coordinates for map overview
-        $mapAssets = Asset::with('wilayah:id,nama')
+        $mapAssets = Asset::with('ruangan:id,nama')
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
-            ->select(['id', 'kib_type', 'nama_barang', 'kode_barang', 'wilayah_id', 'pj_nama', 'harga', 'latitude', 'longitude'])
+            ->select(['id', 'kib_type', 'nama_barang', 'kode_barang', 'ruangan_id', 'pj_nama', 'harga', 'latitude', 'longitude'])
             ->limit(500)
             ->get();
 
         return Inertia::render('Dashboard', [
             'perKib' => $perKib,
-            'perWilayah' => $perWilayah,
+            'perRuangan' => $perRuangan,
             'totalCount' => $totalCount,
             'totalValue' => $totalValue,
             'mapAssets' => $mapAssets,

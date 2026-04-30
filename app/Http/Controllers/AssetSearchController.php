@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asset;
-use App\Models\Wilayah;
+use App\Models\Ruangan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -11,15 +11,15 @@ class AssetSearchController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Asset::with('wilayah:id,nama');
+        $query = Asset::with('ruangan:id,nama');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama_barang', 'ilike', "%{$search}%")
-                  ->orWhere('kode_barang', 'ilike', "%{$search}%")
-                  ->orWhere('nomor_register', 'ilike', "%{$search}%")
-                  ->orWhere('pj_nama', 'ilike', "%{$search}%")
-                  ->orWhere('keterangan', 'ilike', "%{$search}%");
+                    ->orWhere('kode_barang', 'ilike', "%{$search}%")
+                    ->orWhere('nomor_register', 'ilike', "%{$search}%")
+                    ->orWhere('pj_nama', 'ilike', "%{$search}%")
+                    ->orWhere('keterangan', 'ilike', "%{$search}%");
             });
         }
 
@@ -27,8 +27,8 @@ class AssetSearchController extends Controller
             $query->where('kib_type', $kibType);
         }
 
-        if ($wilayahId = $request->input('wilayah_id')) {
-            $query->where('wilayah_id', $wilayahId);
+        if ($ruanganId = $request->input('ruangan_id')) {
+            $query->where('ruangan_id', $ruanganId);
         }
 
         if ($pjNama = $request->input('pj_nama')) {
@@ -41,12 +41,12 @@ class AssetSearchController extends Controller
 
         return Inertia::render('Search/Index', [
             'assets' => $assets,
-            'wilayahs' => Wilayah::orderBy('nama')->get(['id', 'nama']),
+            'ruangans' => Ruangan::orderBy('nama')->get(['id', 'nama']),
             'kibTypes' => Asset::KIB_LABELS,
             'filters' => [
                 'search' => $search,
                 'kib_type' => $kibType,
-                'wilayah_id' => $wilayahId,
+                'ruangan_id' => $ruanganId,
                 'pj_nama' => $pjNama,
             ],
         ]);
@@ -54,15 +54,15 @@ class AssetSearchController extends Controller
 
     public function map(Request $request)
     {
-        $query = Asset::with('wilayah:id,nama')
+        $query = Asset::with('ruangan:id,nama')
             ->whereNotNull('latitude')
             ->whereNotNull('longitude');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama_barang', 'ilike', "%{$search}%")
-                  ->orWhere('kode_barang', 'ilike', "%{$search}%")
-                  ->orWhere('pj_nama', 'ilike', "%{$search}%");
+                    ->orWhere('kode_barang', 'ilike', "%{$search}%")
+                    ->orWhere('pj_nama', 'ilike', "%{$search}%");
             });
         }
 
@@ -70,23 +70,23 @@ class AssetSearchController extends Controller
             $query->where('kib_type', $kibType);
         }
 
-        if ($wilayahId = $request->input('wilayah_id')) {
-            $query->where('wilayah_id', $wilayahId);
+        if ($ruanganId = $request->input('ruangan_id')) {
+            $query->where('ruangan_id', $ruanganId);
         }
 
         $assets = $query->select([
             'id', 'kib_type', 'nama_barang', 'kode_barang',
-            'wilayah_id', 'pj_nama', 'harga', 'latitude', 'longitude',
+            'ruangan_id', 'pj_nama', 'harga', 'latitude', 'longitude',
         ])->limit(1000)->get();
 
         return Inertia::render('Search/Map', [
             'assets' => $assets,
-            'wilayahs' => Wilayah::orderBy('nama')->get(['id', 'nama']),
+            'ruangans' => Ruangan::orderBy('nama')->get(['id', 'nama']),
             'kibTypes' => Asset::KIB_LABELS,
             'filters' => [
                 'search' => $search,
                 'kib_type' => $kibType,
-                'wilayah_id' => $wilayahId,
+                'ruangan_id' => $ruanganId,
             ],
         ]);
     }

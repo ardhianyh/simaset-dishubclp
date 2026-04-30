@@ -9,7 +9,7 @@ class PublicAssetController extends Controller
 {
     public function show(Asset $asset)
     {
-        $asset->load(['wilayah', 'detail']);
+        $asset->load(['ruangan', 'detail']);
 
         return Inertia::render('Assets/Public', [
             'asset' => [
@@ -17,7 +17,7 @@ class PublicAssetController extends Controller
                 'kode_barang' => $asset->kode_barang,
                 'kib_type' => $asset->kib_type,
                 'kib_label' => Asset::KIB_LABELS[$asset->kib_type] ?? '',
-                'lokasi' => $asset->wilayah?->nama ?? '-',
+                'lokasi' => $asset->ruangan?->nama ?? '-',
                 'pj_nama' => $asset->pj_nama,
                 'pj_nip' => $asset->pj_nip,
             ],

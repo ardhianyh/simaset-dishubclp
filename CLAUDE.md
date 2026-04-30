@@ -58,8 +58,8 @@ npx tsc --noEmit           # TypeScript check
 - Single `AssetController` handles all 6 KIB types via `{kibSlug}` route param
 - Route regex: `kib-[a-el]` (character class: a-e + l)
 - Base table (`assets`) + detail tables (`kib_*_details`) pattern (1:1 relation)
-- `WilayahScope` global scope on Asset model (auto-filter staff by region)
-- Roles: `admin` (full access) and `staff` (wilayah-scoped)
+- `RuanganScope` global scope on Asset model (auto-filter staff by ruangan); `WilayahScope` retained but unused — wilayah master data is hidden in the asset flows
+- Roles: `admin` (full access) and `staff` (ruangan-scoped)
 - Admin middleware alias: `'admin'` -> `EnsureUserIsAdmin`
 - Flash messages: `HandleInertiaRequests` -> `useFlashMessages` hook -> sonner Toaster
 - Private storage for documents (UUID naming)

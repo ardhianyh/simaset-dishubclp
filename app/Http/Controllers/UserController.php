@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Ruangan;
 use App\Models\User;
-use App\Models\Wilayah;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -13,13 +13,13 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::with('wilayahs:id,nama');
+        $query = User::with('ruangans:id,nama');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'ilike', "%{$search}%")
-                  ->orWhere('email', 'ilike', "%{$search}%")
-                  ->orWhere('nip', 'ilike', "%{$search}%");
+                    ->orWhere('email', 'ilike', "%{$search}%")
+                    ->orWhere('nip', 'ilike', "%{$search}%");
             });
         }
 
@@ -41,7 +41,7 @@ class UserController extends Controller
     public function create()
     {
         return Inertia::render('Users/Create', [
-            'wilayahs' => Wilayah::orderBy('nama')->get(['id', 'nama']),
+            'ruangans' => Ruangan::orderBy('nama')->get(['id', 'nama']),
         ]);
     }
 
@@ -55,8 +55,8 @@ class UserController extends Controller
             'role' => ['required', 'in:admin,staff'],
             'telepon' => ['nullable', 'string', 'max:20'],
             'is_active' => ['boolean'],
-            'wilayah_ids' => ['nullable', 'array'],
-            'wilayah_ids.*' => ['exists:wilayahs,id'],
+            'ruangan_ids' => ['nullable', 'array'],
+            'ruangan_ids.*' => ['exists:ruangans,id'],
         ]);
 
         $user = User::create([
@@ -69,8 +69,8 @@ class UserController extends Controller
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
-        if (! empty($validated['wilayah_ids'])) {
-            $user->wilayahs()->sync($validated['wilayah_ids']);
+        if (! empty($validated['ruangan_ids'])) {
+            $user->ruangans()->sync($validated['ruangan_ids']);
         }
 
         return redirect()->route('users.index')->with('success', 'Pengguna berhasil ditambahkan.');
@@ -78,11 +78,11 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $user->load('wilayahs:id,nama');
+        $user->load('ruangans:id,nama');
 
         return Inertia::render('Users/Edit', [
             'user' => $user,
-            'wilayahs' => Wilayah::orderBy('nama')->get(['id', 'nama']),
+            'ruangans' => Ruangan::orderBy('nama')->get(['id', 'nama']),
         ]);
     }
 
@@ -96,8 +96,8 @@ class UserController extends Controller
             'role' => ['required', 'in:admin,staff'],
             'telepon' => ['nullable', 'string', 'max:20'],
             'is_active' => ['boolean'],
-            'wilayah_ids' => ['nullable', 'array'],
-            'wilayah_ids.*' => ['exists:wilayahs,id'],
+            'ruangan_ids' => ['nullable', 'array'],
+            'ruangan_ids.*' => ['exists:ruangans,id'],
         ]);
 
         $userData = [
@@ -114,7 +114,7 @@ class UserController extends Controller
         }
 
         $user->update($userData);
-        $user->wilayahs()->sync($validated['wilayah_ids'] ?? []);
+        $user->ruangans()->sync($validated['ruangan_ids'] ?? []);
 
         return redirect()->route('users.index')->with('success', 'Pengguna berhasil diperbarui.');
     }
@@ -125,7 +125,7 @@ class UserController extends Controller
             return back()->with('error', 'Anda tidak dapat menghapus akun sendiri.');
         }
 
-        $user->wilayahs()->detach();
+        $user->ruangans()->detach();
         $user->delete();
 
         return redirect()->route('users.index')->with('success', 'Pengguna berhasil dihapus.');

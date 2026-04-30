@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { Asset, Wilayah } from '@/types';
+import { Asset, Ruangan } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -17,12 +17,12 @@ import { FormEvent, useState } from 'react';
 
 interface Props {
     assets: MapAsset[];
-    wilayahs: Wilayah[];
+    ruangans: Ruangan[];
     kibTypes: Record<string, string>;
     filters: {
         search?: string;
         kib_type?: string;
-        wilayah_id?: string;
+        ruangan_id?: string;
     };
 }
 
@@ -44,7 +44,7 @@ const KIB_BADGE_COLORS: Record<string, string> = {
     L: 'bg-cyan-100 text-cyan-800',
 };
 
-export default function SearchMap({ assets, wilayahs, kibTypes, filters }: Props) {
+export default function SearchMap({ assets, ruangans, kibTypes, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [selectedAsset, setSelectedAsset] = useState<MapAsset | null>(null);
 
@@ -52,7 +52,7 @@ export default function SearchMap({ assets, wilayahs, kibTypes, filters }: Props
         return {
             search: filters.search || undefined,
             kib_type: filters.kib_type || undefined,
-            wilayah_id: filters.wilayah_id || undefined,
+            ruangan_id: filters.ruangan_id || undefined,
             ...overrides,
         };
     }
@@ -70,9 +70,9 @@ export default function SearchMap({ assets, wilayahs, kibTypes, filters }: Props
         }), { preserveState: true });
     }
 
-    function handleWilayahFilter(value: string) {
+    function handleRuanganFilter(value: string) {
         router.get('/search/map', buildParams({
-            wilayah_id: value === 'all' ? undefined : value,
+            ruangan_id: value === 'all' ? undefined : value,
         }), { preserveState: true });
     }
 
@@ -82,7 +82,7 @@ export default function SearchMap({ assets, wilayahs, kibTypes, filters }: Props
         router.get('/search/map', {}, { preserveState: true });
     }
 
-    const hasFilters = filters.search || filters.kib_type || filters.wilayah_id;
+    const hasFilters = filters.search || filters.kib_type || filters.ruangan_id;
 
     return (
         <AuthenticatedLayout header="Peta Aset">
@@ -110,14 +110,14 @@ export default function SearchMap({ assets, wilayahs, kibTypes, filters }: Props
                             ))}
                         </SelectContent>
                     </Select>
-                    <Select value={filters.wilayah_id || 'all'} onValueChange={handleWilayahFilter}>
+                    <Select value={filters.ruangan_id || 'all'} onValueChange={handleRuanganFilter}>
                         <SelectTrigger className="w-44">
-                            <SelectValue placeholder="Semua Wilayah" />
+                            <SelectValue placeholder="Semua Ruangan" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">Semua Wilayah</SelectItem>
-                            {wilayahs.map((w) => (
-                                <SelectItem key={w.id} value={String(w.id)}>{w.nama}</SelectItem>
+                            <SelectItem value="all">Semua Ruangan</SelectItem>
+                            {ruangans.map((r) => (
+                                <SelectItem key={r.id} value={String(r.id)}>{r.nama}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -165,8 +165,8 @@ export default function SearchMap({ assets, wilayahs, kibTypes, filters }: Props
                                 </div>
                                 <div className="text-muted-foreground flex items-center gap-4 text-sm">
                                     <span>Kode: <span>{selectedAsset.kode_barang}</span></span>
-                                    {selectedAsset.wilayah && (
-                                        <span>Wilayah: <Badge variant="outline">{selectedAsset.wilayah.nama}</Badge></span>
+                                    {selectedAsset.ruangan && (
+                                        <span>Ruangan: <Badge variant="outline">{selectedAsset.ruangan.nama}</Badge></span>
                                     )}
                                     <span>PJ: {selectedAsset.pj_nama}</span>
                                     <span>Harga: {formatCurrency(selectedAsset.harga)}</span>

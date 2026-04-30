@@ -114,7 +114,7 @@ export default function UsersIndex({ users, filters }: Props) {
                                 <TableHead>Email</TableHead>
                                 <TableHead>NIP</TableHead>
                                 <TableHead className="text-center">Role</TableHead>
-                                <TableHead>Wilayah</TableHead>
+                                <TableHead>Ruangan</TableHead>
                                 <TableHead className="text-center">Status</TableHead>
                                 <TableHead className="w-28 text-right">Aksi</TableHead>
                             </TableRow>
@@ -142,8 +142,8 @@ export default function UsersIndex({ users, filters }: Props) {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-wrap gap-1">
-                                                {user.wilayahs && user.wilayahs.length > 0
-                                                    ? user.wilayahs.map((w) => (
+                                                {user.ruangans && user.ruangans.length > 0
+                                                    ? user.ruangans.map((w) => (
                                                         <Badge key={w.id} variant="outline" className="text-xs">
                                                             {w.nama}
                                                         </Badge>

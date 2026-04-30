@@ -119,7 +119,7 @@ export default function AssetShow({ asset, kibType, kibLabel, jenisOptions, gene
                             <Field label="Nomor Register" value={asset.nomor_register} />
                             <Field label="Asal Usul" value={asset.asal_usul} />
                             <Field label="Harga" value={formatCurrency(asset.harga)} />
-                            <Field label="Wilayah" value={asset.wilayah?.nama} />
+                            <Field label="Ruangan" value={asset.ruangan?.nama} />
                             <Field label="Keterangan" value={asset.keterangan} />
                         </dl>
                     </CardContent>

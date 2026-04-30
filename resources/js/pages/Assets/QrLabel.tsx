@@ -89,9 +89,9 @@ export default function QrLabel({ asset, kibType, kibLabel, publicUrl }: Props) 
                             <p className="text-xs text-gray-500">
                                 {kibLabel}
                             </p>
-                            {asset.wilayah && (
+                            {asset.ruangan && (
                                 <p className="text-xs text-gray-500">
-                                    {asset.wilayah.nama}
+                                    {asset.ruangan.nama}
                                 </p>
                             )}
                         </div>

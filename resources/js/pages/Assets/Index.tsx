@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { PaginatedData, Asset, Wilayah, KibType, PageProps, ImportError } from '@/types';
+import { PaginatedData, Asset, Ruangan, KibType, PageProps, ImportError } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -35,10 +35,10 @@ interface Props {
     assets: PaginatedData<Asset>;
     kibType: KibType;
     kibLabel: string;
-    wilayahs: Wilayah[];
+    ruangans: Ruangan[];
     filters: {
         search?: string;
-        wilayah_id?: string;
+        ruangan_id?: string;
     };
 }
 
@@ -51,7 +51,7 @@ function formatCurrency(value: number): string {
     }).format(value);
 }
 
-export default function AssetIndex({ assets, kibType, kibLabel, wilayahs, filters }: Props) {
+export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [importing, setImporting] = useState(false);
     const [showErrors, setShowErrors] = useState(false);
@@ -71,14 +71,14 @@ export default function AssetIndex({ assets, kibType, kibLabel, wilayahs, filter
         e.preventDefault();
         router.get(`/assets/${kibSlug}`, {
             search: search || undefined,
-            wilayah_id: filters.wilayah_id || undefined,
+            ruangan_id: filters.ruangan_id || undefined,
         }, { preserveState: true });
     }
 
-    function handleWilayahFilter(value: string) {
+    function handleRuanganFilter(value: string) {
         router.get(`/assets/${kibSlug}`, {
             search: filters.search || undefined,
-            wilayah_id: value === 'all' ? undefined : value,
+            ruangan_id: value === 'all' ? undefined : value,
         }, { preserveState: true });
     }
 
@@ -125,14 +125,14 @@ export default function AssetIndex({ assets, kibType, kibLabel, wilayahs, filter
                                 Cari
                             </Button>
                         </form>
-                        <Select value={filters.wilayah_id || 'all'} onValueChange={handleWilayahFilter}>
+                        <Select value={filters.ruangan_id || 'all'} onValueChange={handleRuanganFilter}>
                             <SelectTrigger className="w-44">
-                                <SelectValue placeholder="Semua Wilayah" />
+                                <SelectValue placeholder="Semua Ruangan" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">Semua Wilayah</SelectItem>
-                                {wilayahs.map((w) => (
-                                    <SelectItem key={w.id} value={String(w.id)}>{w.nama}</SelectItem>
+                                <SelectItem value="all">Semua Ruangan</SelectItem>
+                                {ruangans.map((r) => (
+                                    <SelectItem key={r.id} value={String(r.id)}>{r.nama}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -157,7 +157,7 @@ export default function AssetIndex({ assets, kibType, kibLabel, wilayahs, filter
                             {importing ? 'Mengimpor...' : 'Import Excel'}
                         </Button>
                         <Button variant="outline" size="sm" asChild>
-                            <a href={`/export/${kibSlug}${filters.wilayah_id ? `?wilayah_id=${filters.wilayah_id}` : ''}`}>
+                            <a href={`/export/${kibSlug}${filters.ruangan_id ? `?ruangan_id=${filters.ruangan_id}` : ''}`}>
                                 <FileDown className="mr-2 size-4" />
                                 Export PDF
                             </a>
@@ -179,7 +179,7 @@ export default function AssetIndex({ assets, kibType, kibLabel, wilayahs, filter
                                 <TableHead>Nama Barang</TableHead>
                                 <TableHead>Kode Barang</TableHead>
                                 <TableHead>No. Register</TableHead>
-                                <TableHead>Wilayah</TableHead>
+                                <TableHead>Ruangan</TableHead>
                                 <TableHead>PJ</TableHead>
                                 <TableHead className="text-right">Harga</TableHead>
                                 <TableHead className="w-28 text-right">Aksi</TableHead>
@@ -202,8 +202,8 @@ export default function AssetIndex({ assets, kibType, kibLabel, wilayahs, filter
                                         <TableCell className="text-sm">{asset.kode_barang}</TableCell>
                                         <TableCell>{asset.nomor_register}</TableCell>
                                         <TableCell>
-                                            {asset.wilayah ? (
-                                                <Badge variant="outline">{asset.wilayah.nama}</Badge>
+                                            {asset.ruangan ? (
+                                                <Badge variant="outline">{asset.ruangan.nama}</Badge>
                                             ) : (
                                                 <span className="text-muted-foreground">-</span>
                                             )}

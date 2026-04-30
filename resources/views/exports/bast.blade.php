@@ -117,7 +117,7 @@
     <p class="p-indent">Penyerahan barang inventaris tersebut pada pasal 1 sebagai bentuk pertanggungjawaban atas penggunaan {{ $jenisBarang }} Oleh PIHAK KEDUA dalam menunjang tugas-tugas kedinasan.</p>
 
     <!-- PASAL 3 -->
-    <p class="pasal">Pasal 3</p>
+    <p class="pasal" style="page-break-before: always;">Pasal 3</p>
 
     <table class="pasal3-table">
         <tr>

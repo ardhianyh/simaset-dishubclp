@@ -23,7 +23,7 @@ interface KibStat {
     total_value: number;
 }
 
-interface WilayahStat {
+interface RuanganStat {
     id: number;
     nama: string;
     count: number;
@@ -32,7 +32,7 @@ interface WilayahStat {
 
 interface Props extends PageProps {
     perKib: Record<string, KibStat>;
-    perWilayah: WilayahStat[];
+    perRuangan: RuanganStat[];
     totalCount: number;
     totalValue: number;
     mapAssets: MapAsset[];
@@ -61,7 +61,7 @@ function formatNumber(value: number): string {
 }
 
 export default function Dashboard() {
-    const { auth, perKib, perWilayah, totalCount, totalValue, mapAssets } = usePage<Props>().props;
+    const { auth, perKib, perRuangan, totalCount, totalValue, mapAssets } = usePage<Props>().props;
 
     return (
         <AuthenticatedLayout header="Dashboard">
@@ -125,24 +125,24 @@ export default function Dashboard() {
                     })}
                 </div>
 
-                {/* Per Wilayah table */}
-                {perWilayah.length > 0 && (
+                {/* Per Ruangan table */}
+                {perRuangan.length > 0 && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Distribusi Aset per Wilayah</CardTitle>
+                            <CardTitle className="text-base">Distribusi Aset per Ruangan</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="rounded-md border">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Wilayah</TableHead>
+                                            <TableHead>Ruangan</TableHead>
                                             <TableHead className="text-right">Jumlah Aset</TableHead>
                                             <TableHead className="text-right">Total Nilai</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {perWilayah.map((w) => (
+                                        {perRuangan.map((w) => (
                                             <TableRow key={w.id}>
                                                 <TableCell>
                                                     <Badge variant="outline">{w.nama}</Badge>
