@@ -87,7 +87,7 @@ class AssetController extends Controller
                 'detail.nomor_pabrik' => ['nullable', 'string', 'max:100'],
                 'detail.nomor_rangka' => ['nullable', 'string', 'max:100'],
                 'detail.nomor_mesin' => ['nullable', 'string', 'max:100'],
-                'detail.nomor_polisi' => ['nullable', 'string', 'max:20'],
+                'detail.nomor_polisi' => ['nullable', 'string', 'max:100'],
                 'detail.nomor_bpkb' => ['nullable', 'string', 'max:100'],
             ],
             'C' => [
