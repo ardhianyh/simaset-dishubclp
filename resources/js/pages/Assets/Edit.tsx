@@ -2,7 +2,8 @@ import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
 import { Asset, Ruangan, KibType } from '@/types';
 import AssetForm from './Partials/AssetForm';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
 interface Props {
     asset: Asset;
@@ -61,11 +62,42 @@ export default function AssetEdit({ asset, kibType, kibLabel, ruangans, asalUsul
     function handleSubmit(e: FormEvent) {
         e.preventDefault();
         setProcessing(true);
+        setErrors({});
+        
         router.put(`/assets/${kibSlug}/${asset.id}`, data as unknown as Record<string, string>, {
-            onError: (errs) => { setErrors(errs); setProcessing(false); },
-            onFinish: () => setProcessing(false),
+            onError: (errs) => {
+                setProcessing(false);
+                
+                // Check if this is a validation error (has field keys) or server error
+                const errorCount = Object.keys(errs).length;
+                
+                if (errorCount > 0 && Object.keys(errs).some(k => k.includes('.'))) {
+                    // Validation errors - field-level errors
+                    setErrors(errs);
+                    toast.error(`Validasi gagal: ${errorCount} field memiliki error. Periksa kembali data yang diisi.`);
+                } else if (errorCount === 0 || Object.keys(errs).includes('error')) {
+                    // Server error - no specific field errors
+                    toast.error('Terjadi kesalahan pada server. Mohon hubungi administrator.');
+                    console.error('Server error:', errs);
+                } else {
+                    // Other validation errors
+                    setErrors(errs);
+                    toast.error(`Terjadi kesalahan. Periksa kembali data yang diisi.`);
+                }
+            },
+            onSuccess: () => {
+                setProcessing(false);
+            },
         });
     }
+
+    // Show toast when errors are detected
+    useEffect(() => {
+        const errorCount = Object.keys(errors).length;
+        if (errorCount > 0) {
+            console.error('Form validation errors:', errors);
+        }
+    }, [errors]);
 
     return (
         <AuthenticatedLayout header={`Edit ${kibLabel}`}>
