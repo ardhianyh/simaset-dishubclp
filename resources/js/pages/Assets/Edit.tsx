@@ -4,6 +4,7 @@ import { Asset, Ruangan, KibType } from '@/types';
 import AssetForm from './Partials/AssetForm';
 import { FormEvent, useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { formatValidationErrors } from '@/utils/formatErrors';
 
 interface Props {
     asset: Asset;
@@ -74,7 +75,8 @@ export default function AssetEdit({ asset, kibType, kibLabel, ruangans, asalUsul
                 if (errorCount > 0 && Object.keys(errs).some(k => k.includes('.'))) {
                     // Validation errors - field-level errors
                     setErrors(errs);
-                    toast.error(`Validasi gagal: ${errorCount} field memiliki error. Periksa kembali data yang diisi.`);
+                    const formattedErrors = formatValidationErrors(errs);
+                    toast.error(formattedErrors);
                 } else if (errorCount === 0 || Object.keys(errs).includes('error')) {
                     // Server error - no specific field errors
                     toast.error('Terjadi kesalahan pada server. Mohon hubungi administrator.');
@@ -82,7 +84,8 @@ export default function AssetEdit({ asset, kibType, kibLabel, ruangans, asalUsul
                 } else {
                     // Other validation errors
                     setErrors(errs);
-                    toast.error(`Terjadi kesalahan. Periksa kembali data yang diisi.`);
+                    const formattedErrors = formatValidationErrors(errs);
+                    toast.error(formattedErrors);
                 }
             },
             onSuccess: () => {

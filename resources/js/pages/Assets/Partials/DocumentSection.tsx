@@ -39,6 +39,8 @@ import {
 } from '@/components/ui/dialog';
 import { Upload, Download, Trash2, FileText, Image, File, Eye } from 'lucide-react';
 import { FormEvent, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { formatValidationErrors } from '@/utils/formatErrors';
 
 interface Props {
     asset: Asset;
@@ -89,6 +91,16 @@ export default function DocumentSection({ asset, kibSlug, jenisOptions }: Props)
         setUploading(true);
         router.post(`/assets/${kibSlug}/${asset.id}/documents`, formData, {
             forceFormData: true,
+            onError: (errs) => {
+                const errorCount = Object.keys(errs).length;
+                if (errorCount > 0) {
+                    const formattedErrors = formatValidationErrors(errs);
+                    toast.error(formattedErrors);
+                } else {
+                    toast.error('Terjadi kesalahan pada server. Mohon hubungi administrator.');
+                }
+                console.error('Document upload error:', errs);
+            },
             onFinish: () => {
                 setUploading(false);
                 setJenisDokumen('');

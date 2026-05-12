@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
+import { toast } from 'sonner';
+import { formatValidationErrors } from '@/utils/formatErrors';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -116,7 +118,19 @@ export default function DisposalDialog({ asset, kibSlug, open, onOpenChange }: P
                 onOpenChange(false);
             },
             onError: (errs) => {
-                setErrors(errs as Record<string, string>);
+                const errorObj = errs as Record<string, string>;
+                setErrors(errorObj);
+                const errorCount = Object.keys(errorObj).length;
+                if (errorCount > 0 && Object.keys(errorObj).some(k => k.includes('.'))) {
+                    const formattedErrors = formatValidationErrors(errorObj);
+                    toast.error(formattedErrors);
+                } else if (errorCount === 0 || Object.keys(errorObj).includes('error')) {
+                    toast.error('Terjadi kesalahan pada server. Mohon hubungi administrator.');
+                } else {
+                    const formattedErrors = formatValidationErrors(errorObj);
+                    toast.error(formattedErrors);
+                }
+                console.error('Disposal error:', errorObj);
             },
             onFinish: () => setProcessing(false),
         });

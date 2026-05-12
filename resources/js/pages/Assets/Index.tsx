@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/dialog';
 import Pagination from '@/components/Pagination';
 import DisposalDialog from './Partials/DisposalDialog';
+import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Search, Eye, FileDown, Upload, Download } from 'lucide-react';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 
@@ -95,6 +96,15 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
         setImporting(true);
         router.post(`/assets/${kibSlug}/import`, { file }, {
             forceFormData: true,
+            onError: (errs) => {
+                const errorCount = Object.keys(errs).length;
+                if (errorCount > 0 && Object.keys(errs).some(k => !k.includes('error'))) {
+                    toast.error(`Import gagal: Ada ${errorCount} error dalam file. Periksa kembali.`);
+                } else {
+                    toast.error('Terjadi kesalahan pada server. Mohon hubungi administrator.');
+                }
+                console.error('Import error:', errs);
+            },
             onFinish: () => {
                 setImporting(false);
                 if (fileInputRef.current) {

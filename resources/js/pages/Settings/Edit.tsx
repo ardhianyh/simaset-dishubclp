@@ -5,7 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import { formatValidationErrors } from '@/utils/formatErrors';
 
 interface Props {
     settings: Record<string, string>;
@@ -14,6 +16,7 @@ interface Props {
 export default function SettingsEdit({ settings }: Props) {
     const [data, setData] = useState(settings);
     const [processing, setProcessing] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     function handleChange(key: string, value: string) {
         setData((prev) => ({ ...prev, [key]: value }));
@@ -22,10 +25,33 @@ export default function SettingsEdit({ settings }: Props) {
     function handleSubmit(e: FormEvent) {
         e.preventDefault();
         setProcessing(true);
+        setErrors({});
         router.put('/settings', data, {
+            onError: (errs) => {
+                setProcessing(false);
+                const errorCount = Object.keys(errs).length;
+                if (errorCount > 0) {
+                    setErrors(errs);
+                    const formattedErrors = formatValidationErrors(errs);
+                    toast.error(formattedErrors);
+                } else {
+                    toast.error('Terjadi kesalahan pada server. Mohon hubungi administrator.');
+                }
+                console.error('Settings error:', errs);
+            },
+            onSuccess: () => {
+                setProcessing(false);
+            },
             onFinish: () => setProcessing(false),
         });
     }
+
+    useEffect(() => {
+        const errorCount = Object.keys(errors).length;
+        if (errorCount > 0) {
+            console.error('Settings validation errors:', errors);
+        }
+    }, [errors]);
 
     return (
         <AuthenticatedLayout header="Pengaturan">

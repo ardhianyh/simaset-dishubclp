@@ -21,6 +21,8 @@ import {
 import { router } from '@inertiajs/react';
 import { Camera, ImagePlus, Trash2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { DragEvent, useCallback, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { formatValidationErrors } from '@/utils/formatErrors';
 
 interface Props {
     asset: Asset;
@@ -55,6 +57,16 @@ export default function PhotoSection({ asset, kibSlug }: Props) {
             setUploading(true);
             router.post(`/assets/${kibSlug}/${asset.id}/photos`, formData, {
                 forceFormData: true,
+                onError: (errs) => {
+                    const errorCount = Object.keys(errs).length;
+                    if (errorCount > 0) {
+                        const formattedErrors = formatValidationErrors(errs);
+                        toast.error(formattedErrors);
+                    } else {
+                        toast.error('Terjadi kesalahan pada server. Mohon hubungi administrator.');
+                    }
+                    console.error('Photo upload error:', errs);
+                },
                 onFinish: () => {
                     setUploading(false);
                     if (fileInputRef.current) fileInputRef.current.value = '';
