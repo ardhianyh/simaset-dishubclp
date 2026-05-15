@@ -7,6 +7,7 @@ use App\Models\AssetDisposal;
 use App\Models\AssetDisposalDocument;
 use App\Models\AssetGeneratedDocument;
 use App\Models\Ruangan;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -167,6 +168,12 @@ class AssetController extends Controller
             'filters' => [
                 'search' => $search,
                 'ruangan_id' => $ruanganId,
+            ],
+            'ttdSettings' => [
+                'kepala_nama' => Setting::get('ttd_kepala_nama', ''),
+                'kepala_nip' => Setting::get('ttd_kepala_nip', ''),
+                'pengurus_nama' => Setting::get('ttd_pengurus_nama', ''),
+                'pengurus_nip' => Setting::get('ttd_pengurus_nip', ''),
             ],
         ]);
     }

@@ -211,14 +211,14 @@
                     <p>MENGETAHUI</p>
                     <p>KEPALA DINAS</p>
                     <div class="ttd-space"></div>
-                    <p class="ttd-name">{{ $settings['ttd_kepala_nama'] }}</p>
-                    <p class="ttd-nip">NIP. {{ $settings['ttd_kepala_nip'] }}</p>
+                    <p class="ttd-name">{{ $kepalaNama ?: '&nbsp;' }}</p>
+                    <p class="ttd-nip">NIP. {{ $kepalaNip ?: '&nbsp;' }}</p>
                 </div>
                 <div class="footer-col">
                     <p>PETUGAS PENGURUS BARANG</p>
                     <div class="ttd-space"></div>
-                    <p class="ttd-name">{{ $settings['ttd_pengurus_nama'] }}</p>
-                    <p class="ttd-nip">NIP. {{ $settings['ttd_pengurus_nip'] }}</p>
+                    <p class="ttd-name">{{ $pengurusNama ?: '&nbsp;' }}</p>
+                    <p class="ttd-nip">NIP. {{ $pengurusNip ?: '&nbsp;' }}</p>
                 </div>
                 <div class="footer-col">
                     <p>PETUGAS PENGURUS BARANG</p>

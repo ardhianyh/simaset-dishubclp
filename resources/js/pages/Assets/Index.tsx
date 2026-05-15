@@ -41,6 +41,12 @@ interface Props {
         search?: string;
         ruangan_id?: string;
     };
+    ttdSettings: {
+        kepala_nama: string;
+        kepala_nip: string;
+        pengurus_nama: string;
+        pengurus_nip: string;
+    };
 }
 
 function formatCurrency(value: number): string {
@@ -52,7 +58,7 @@ function formatCurrency(value: number): string {
     }).format(value);
 }
 
-export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filters }: Props) {
+export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filters, ttdSettings }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [importing, setImporting] = useState(false);
     const [showErrors, setShowErrors] = useState(false);
@@ -88,17 +94,29 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
     const [kirRuanganId, setKirRuanganId] = useState<string>(
         filters.ruangan_id || (ruangans[0]?.id ? String(ruangans[0].id) : '')
     );
+    const [kirKepalaNama, setKirKepalaNama] = useState(() => localStorage.getItem('kir_kepala_nama') ?? ttdSettings.kepala_nama);
+    const [kirKepalaNip, setKirKepalaNip] = useState(() => localStorage.getItem('kir_kepala_nip') ?? ttdSettings.kepala_nip);
+    const [kirPengurusDinasNama, setKirPengurusDinasNama] = useState(() => localStorage.getItem('kir_pengurus_dinas_nama') ?? ttdSettings.pengurus_nama);
+    const [kirPengurusDinasNip, setKirPengurusDinasNip] = useState(() => localStorage.getItem('kir_pengurus_dinas_nip') ?? ttdSettings.pengurus_nip);
     const [kirPengurusNama, setKirPengurusNama] = useState(() => localStorage.getItem('kir_pengurus_ruangan_nama') ?? '');
     const [kirPengurusNip, setKirPengurusNip] = useState(() => localStorage.getItem('kir_pengurus_ruangan_nip') ?? '');
     const [kirPjNama, setKirPjNama] = useState(() => localStorage.getItem('kir_pj_ruangan_nama') ?? '');
     const [kirPjNip, setKirPjNip] = useState(() => localStorage.getItem('kir_pj_ruangan_nip') ?? '');
 
     function handleKirDownload() {
+        localStorage.setItem('kir_kepala_nama', kirKepalaNama);
+        localStorage.setItem('kir_kepala_nip', kirKepalaNip);
+        localStorage.setItem('kir_pengurus_dinas_nama', kirPengurusDinasNama);
+        localStorage.setItem('kir_pengurus_dinas_nip', kirPengurusDinasNip);
         localStorage.setItem('kir_pengurus_ruangan_nama', kirPengurusNama);
         localStorage.setItem('kir_pengurus_ruangan_nip', kirPengurusNip);
         localStorage.setItem('kir_pj_ruangan_nama', kirPjNama);
         localStorage.setItem('kir_pj_ruangan_nip', kirPjNip);
         const params = new URLSearchParams();
+        if (kirKepalaNama) params.set('kepala_nama', kirKepalaNama);
+        if (kirKepalaNip) params.set('kepala_nip', kirKepalaNip);
+        if (kirPengurusDinasNama) params.set('pengurus_nama', kirPengurusDinasNama);
+        if (kirPengurusDinasNip) params.set('pengurus_nip', kirPengurusDinasNip);
         if (kirPengurusNama) params.set('pengurus_ruangan_nama', kirPengurusNama);
         if (kirPengurusNip) params.set('pengurus_ruangan_nip', kirPengurusNip);
         if (kirPjNama) params.set('pj_ruangan_nama', kirPjNama);
@@ -296,14 +314,14 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
             )}
 
             <Dialog open={showKirDialog} onOpenChange={setShowKirDialog}>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-w-lg">
                     <DialogHeader>
                         <DialogTitle>Kartu Inventaris Ruangan</DialogTitle>
                         <DialogDescription>
                             Pilih ruangan dan isi data penandatangan untuk mengunduh KIR.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4">
+                    <div className="max-h-[65vh] space-y-4 overflow-y-auto pr-1">
                         <div className="space-y-1.5">
                             <p className="text-sm font-medium">Ruangan</p>
                             {ruangans.length === 0 ? (
@@ -320,6 +338,44 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
                                     </SelectContent>
                                 </Select>
                             )}
+                        </div>
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t" /></div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background text-muted-foreground px-2">Penandatangan Dinas</span>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium">Kepala Dinas</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                    <p className="text-muted-foreground text-xs">Nama</p>
+                                    <Input value={kirKepalaNama} onChange={(e) => setKirKepalaNama(e.target.value)} placeholder="Nama lengkap" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-muted-foreground text-xs">NIP</p>
+                                    <Input value={kirKepalaNip} onChange={(e) => setKirKepalaNip(e.target.value)} placeholder="NIP" />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium">Petugas Pengurus Barang</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                    <p className="text-muted-foreground text-xs">Nama</p>
+                                    <Input value={kirPengurusDinasNama} onChange={(e) => setKirPengurusDinasNama(e.target.value)} placeholder="Nama lengkap" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-muted-foreground text-xs">NIP</p>
+                                    <Input value={kirPengurusDinasNip} onChange={(e) => setKirPengurusDinasNip(e.target.value)} placeholder="NIP" />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t" /></div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background text-muted-foreground px-2">Penandatangan Ruangan</span>
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <p className="text-sm font-medium">Petugas Pengurus Barang Ruangan</p>
