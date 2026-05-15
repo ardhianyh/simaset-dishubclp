@@ -224,15 +224,15 @@
                     <p>PETUGAS PENGURUS BARANG</p>
                     <p>RUANGAN</p>
                     <div class="ttd-space"></div>
-                    <p class="ttd-name">&nbsp;</p>
-                    <p class="ttd-nip">NIP.&nbsp;</p>
+                    <p class="ttd-name">{{ $pengurusRuanganNama ?: '&nbsp;' }}</p>
+                    <p class="ttd-nip">NIP. {{ $pengurusRuanganNip ?: '&nbsp;' }}</p>
                 </div>
                 <div class="footer-col">
                     <p>{{ $settings['ttd_kota'] ?: '............' }}, {{ $tanggal }}</p>
                     <p>Penanggung Jawab Ruangan</p>
                     <div class="ttd-space"></div>
-                    <p class="ttd-name">&nbsp;</p>
-                    <p class="ttd-nip">NIP.&nbsp;</p>
+                    <p class="ttd-name">{{ $pjRuanganNama ?: '&nbsp;' }}</p>
+                    <p class="ttd-nip">NIP. {{ $pjRuanganNip ?: '&nbsp;' }}</p>
                 </div>
             </div>
         </div>

@@ -88,6 +88,25 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
     const [kirRuanganId, setKirRuanganId] = useState<string>(
         filters.ruangan_id || (ruangans[0]?.id ? String(ruangans[0].id) : '')
     );
+    const [kirPengurusNama, setKirPengurusNama] = useState(() => localStorage.getItem('kir_pengurus_ruangan_nama') ?? '');
+    const [kirPengurusNip, setKirPengurusNip] = useState(() => localStorage.getItem('kir_pengurus_ruangan_nip') ?? '');
+    const [kirPjNama, setKirPjNama] = useState(() => localStorage.getItem('kir_pj_ruangan_nama') ?? '');
+    const [kirPjNip, setKirPjNip] = useState(() => localStorage.getItem('kir_pj_ruangan_nip') ?? '');
+
+    function handleKirDownload() {
+        localStorage.setItem('kir_pengurus_ruangan_nama', kirPengurusNama);
+        localStorage.setItem('kir_pengurus_ruangan_nip', kirPengurusNip);
+        localStorage.setItem('kir_pj_ruangan_nama', kirPjNama);
+        localStorage.setItem('kir_pj_ruangan_nip', kirPjNip);
+        const params = new URLSearchParams();
+        if (kirPengurusNama) params.set('pengurus_ruangan_nama', kirPengurusNama);
+        if (kirPengurusNip) params.set('pengurus_ruangan_nip', kirPengurusNip);
+        if (kirPjNama) params.set('pj_ruangan_nama', kirPjNama);
+        if (kirPjNip) params.set('pj_ruangan_nip', kirPjNip);
+        const qs = params.toString();
+        window.location.href = `/export/kir-ruangan/${kirRuanganId}${qs ? `?${qs}` : ''}`;
+        setShowKirDialog(false);
+    }
 
     function handleImportClick() {
         fileInputRef.current?.click();
@@ -277,38 +296,63 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
             )}
 
             <Dialog open={showKirDialog} onOpenChange={setShowKirDialog}>
-                <DialogContent className="max-w-sm">
+                <DialogContent className="max-w-md">
                     <DialogHeader>
                         <DialogTitle>Kartu Inventaris Ruangan</DialogTitle>
                         <DialogDescription>
-                            Pilih ruangan untuk mengunduh KIR dalam format PDF.
+                            Pilih ruangan dan isi data penandatangan untuk mengunduh KIR.
                         </DialogDescription>
                     </DialogHeader>
-                    {ruangans.length === 0 ? (
-                        <p className="text-muted-foreground text-sm">Belum ada data ruangan.</p>
-                    ) : (
-                        <Select value={kirRuanganId} onValueChange={setKirRuanganId}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Pilih Ruangan" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {ruangans.map((r) => (
-                                    <SelectItem key={r.id} value={String(r.id)}>{r.nama}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
+                    <div className="space-y-4">
+                        <div className="space-y-1.5">
+                            <p className="text-sm font-medium">Ruangan</p>
+                            {ruangans.length === 0 ? (
+                                <p className="text-muted-foreground text-sm">Belum ada data ruangan.</p>
+                            ) : (
+                                <Select value={kirRuanganId} onValueChange={setKirRuanganId}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih Ruangan" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {ruangans.map((r) => (
+                                            <SelectItem key={r.id} value={String(r.id)}>{r.nama}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium">Petugas Pengurus Barang Ruangan</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                    <p className="text-muted-foreground text-xs">Nama</p>
+                                    <Input value={kirPengurusNama} onChange={(e) => setKirPengurusNama(e.target.value)} placeholder="Nama lengkap" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-muted-foreground text-xs">NIP</p>
+                                    <Input value={kirPengurusNip} onChange={(e) => setKirPengurusNip(e.target.value)} placeholder="NIP" />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium">Penanggung Jawab Ruangan</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                    <p className="text-muted-foreground text-xs">Nama</p>
+                                    <Input value={kirPjNama} onChange={(e) => setKirPjNama(e.target.value)} placeholder="Nama lengkap" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-muted-foreground text-xs">NIP</p>
+                                    <Input value={kirPjNip} onChange={(e) => setKirPjNip(e.target.value)} placeholder="NIP" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div className="flex justify-end gap-2">
                         <Button variant="outline" onClick={() => setShowKirDialog(false)}>
                             Batal
                         </Button>
-                        <Button
-                            disabled={!kirRuanganId}
-                            onClick={() => {
-                                window.location.href = `/export/kir-ruangan/${kirRuanganId}`;
-                                setShowKirDialog(false);
-                            }}
-                        >
+                        <Button disabled={!kirRuanganId} onClick={handleKirDownload}>
                             <FileDown className="mr-2 size-4" />
                             Download PDF
                         </Button>

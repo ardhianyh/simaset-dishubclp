@@ -107,7 +107,7 @@ class ExportController extends Controller
         return $pdf->download($filename);
     }
 
-    public function kirRuangan(Ruangan $ruangan)
+    public function kirRuangan(Request $request, Ruangan $ruangan)
     {
         $user = auth()->user();
         if (! $user->isAdmin()) {
@@ -136,6 +136,10 @@ class ExportController extends Controller
             'settings' => $settings,
             'tanggal' => $tanggal,
             'logoBase64' => $this->getLogoBase64(),
+            'pengurusRuanganNama' => $request->input('pengurus_ruangan_nama', ''),
+            'pengurusRuanganNip' => $request->input('pengurus_ruangan_nip', ''),
+            'pjRuanganNama' => $request->input('pj_ruangan_nama', ''),
+            'pjRuanganNip' => $request->input('pj_ruangan_nip', ''),
         ])->setPaper('a4', 'landscape');
 
         $filename = 'KIR_'.str_replace(' ', '_', $ruangan->nama).'_'.date('Y-m-d').'.pdf';
