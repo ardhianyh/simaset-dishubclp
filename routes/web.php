@@ -38,6 +38,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/export/{kibSlug}', [ExportController::class, 'export'])
         ->where('kibSlug', 'kib-[a-el]')
         ->name('export.kib');
+    Route::get('/export/kir-ruangan/{ruangan}', [ExportController::class, 'kirRuangan'])
+        ->name('export.kir-ruangan');
     Route::get('/export/pakta-integritas/{asset}', [ExportController::class, 'paktaIntegritas'])
         ->name('export.pakta-integritas');
     Route::get('/export/bast/{asset}', [ExportController::class, 'bast'])

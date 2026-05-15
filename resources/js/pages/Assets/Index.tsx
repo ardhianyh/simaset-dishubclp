@@ -29,7 +29,7 @@ import {
 import Pagination from '@/components/Pagination';
 import DisposalDialog from './Partials/DisposalDialog';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Search, Eye, FileDown, Upload, Download } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Eye, FileDown, Upload, Download, LayoutList } from 'lucide-react';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 
 interface Props {
@@ -84,6 +84,10 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
     }
 
     const [disposalAsset, setDisposalAsset] = useState<Asset | null>(null);
+    const [showKirDialog, setShowKirDialog] = useState(false);
+    const [kirRuanganId, setKirRuanganId] = useState<string>(
+        filters.ruangan_id || (ruangans[0]?.id ? String(ruangans[0].id) : '')
+    );
 
     function handleImportClick() {
         fileInputRef.current?.click();
@@ -171,6 +175,10 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
                                 <FileDown className="mr-2 size-4" />
                                 Export PDF
                             </a>
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => setShowKirDialog(true)}>
+                            <LayoutList className="mr-2 size-4" />
+                            Kartu Inventaris Ruangan
                         </Button>
                         <Button size="sm" asChild>
                             <Link href={`/assets/${kibSlug}/create`}>
@@ -267,6 +275,46 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
                     onOpenChange={(open) => { if (!open) setDisposalAsset(null); }}
                 />
             )}
+
+            <Dialog open={showKirDialog} onOpenChange={setShowKirDialog}>
+                <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>Kartu Inventaris Ruangan</DialogTitle>
+                        <DialogDescription>
+                            Pilih ruangan untuk mengunduh KIR dalam format PDF.
+                        </DialogDescription>
+                    </DialogHeader>
+                    {ruangans.length === 0 ? (
+                        <p className="text-muted-foreground text-sm">Belum ada data ruangan.</p>
+                    ) : (
+                        <Select value={kirRuanganId} onValueChange={setKirRuanganId}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Pilih Ruangan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {ruangans.map((r) => (
+                                    <SelectItem key={r.id} value={String(r.id)}>{r.nama}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                    <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setShowKirDialog(false)}>
+                            Batal
+                        </Button>
+                        <Button
+                            disabled={!kirRuanganId}
+                            onClick={() => {
+                                window.location.href = `/export/kir-ruangan/${kirRuanganId}`;
+                                setShowKirDialog(false);
+                            }}
+                        >
+                            <FileDown className="mr-2 size-4" />
+                            Download PDF
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={showErrors} onOpenChange={setShowErrors}>
                 <DialogContent className="max-w-lg">

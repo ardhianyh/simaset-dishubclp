@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use App\Models\AssetGeneratedDocument;
+use App\Models\Ruangan;
 use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -102,6 +103,42 @@ class ExportController extends Controller
         ])->setPaper('a4', 'landscape');
 
         $filename = 'Rekapitulasi_'.str_replace(' ', '_', Asset::KIB_LABELS[$kibType]).'_'.date('Y-m-d').'.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    public function kirRuangan(Ruangan $ruangan)
+    {
+        $user = auth()->user();
+        if (! $user->isAdmin()) {
+            $assigned = $user->ruangans()->pluck('ruangans.id');
+            if (! $assigned->contains($ruangan->id)) {
+                abort(403);
+            }
+        }
+
+        $assets = Asset::with([
+            'kibADetail', 'kibBDetail', 'kibCDetail',
+            'kibDDetail', 'kibEDetail', 'kibLDetail',
+        ])
+            ->where('ruangan_id', $ruangan->id)
+            ->orderBy('kode_barang')
+            ->get();
+
+        $totalHarga = $assets->sum('harga');
+        $settings = $this->getSettings();
+        $tanggal = now()->translatedFormat('d F Y');
+
+        $pdf = Pdf::loadView('exports.kir-ruangan', [
+            'ruangan' => $ruangan,
+            'assets' => $assets,
+            'totalHarga' => $totalHarga,
+            'settings' => $settings,
+            'tanggal' => $tanggal,
+            'logoBase64' => $this->getLogoBase64(),
+        ])->setPaper('a4', 'landscape');
+
+        $filename = 'KIR_'.str_replace(' ', '_', $ruangan->nama).'_'.date('Y-m-d').'.pdf';
 
         return $pdf->download($filename);
     }
