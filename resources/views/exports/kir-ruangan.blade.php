@@ -48,7 +48,7 @@
             <div class="header">
                 <h2>{{ $settings['instansi_kabkota'] ?: 'KABUPATEN ...' }}</h2>
                 <h3>KARTU INVENTARIS RUANGAN</h3>
-                <h4>PER {{ now()->format('d') }} &ndash;{{ now()->translatedFormat('F') }}&ndash;{{ now()->format('Y') }}</h4>
+                <h4>PER {{ now()->format('d') }} -{{ ucfirst(now()->translatedFormat('F')) }}-{{ now()->format('Y') }}</h4>
             </div>
         </div>
 
@@ -170,9 +170,9 @@
                             break;
                     }
 
-                    $baik      = ($kondisi === null || $kondisi === 'Baik') ? 1 : 0;
-                    $kurangBaik = ($kondisi === 'Kurang Baik') ? 1 : 0;
-                    $rusakBerat = ($kondisi === 'Rusak Berat') ? 1 : 0;
+                    $baik      = ($kondisi === null || $kondisi === 'Baik') ? $jumlah : 0;
+                    $kurangBaik = ($kondisi === 'Kurang Baik') ? $jumlah : 0;
+                    $rusakBerat = ($kondisi === 'Rusak Berat') ? $jumlah : 0;
                 @endphp
                 <tr>
                     <td class="center">{{ $i + 1 }}</td>
