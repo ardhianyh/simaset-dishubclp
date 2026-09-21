@@ -105,6 +105,7 @@ database/migrations/      # 21 migrations
 - Leaflet default marker icons need explicit import fix in bundled envs
 - `usePage` generic must satisfy PageProps constraint
 - react-leaflet@4 required for React 18 compat (v5 needs React 19)
+- DomPDF: selector `*` untuk reset margin ikut membatalkan `@page { margin }` sehingga halaman lanjutan kehilangan margin atas — pakai reset per-elemen (lihat `exports/_styles.blade.php`)
 
 ## Memory & Context
 
