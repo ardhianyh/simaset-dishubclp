@@ -1,9 +1,13 @@
 <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* margin di @page supaya halaman lanjutan ikut punya jarak atas, bukan hanya halaman pertama.
+       Reset harus per-elemen: selector `*` ikut mengenai page box dan membatalkan margin ini. */
+    @page { margin: 12mm 8mm; }
+    body, div, p, h1, h2, h3, h4, h5, h6,
+    table, thead, tbody, tfoot, tr, th, td, img { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Times New Roman', Times, serif; font-size: 9pt; color: #000; }
-    .page { padding: 10mm 8mm; }
 
-    .header-wrapper { position: relative; min-height: 20mm; margin-bottom: 3mm; }
+    /* logo 18mm lebarnya = ~24mm tingginya, wrapper harus lebih tinggi supaya ada jarak ke blok info */
+    .header-wrapper { position: relative; min-height: 28mm; margin-bottom: 3mm; }
     .header-logo { position: absolute; top: 0; left: 0; width: 18mm; height: auto; }
     .header { text-align: center; }
     .header h2 { font-size: 11pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2mm; }
