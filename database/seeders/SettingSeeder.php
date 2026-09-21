@@ -16,7 +16,7 @@ class SettingSeeder extends Seeder
             'instansi_bidang' => 'Bidang Perhubungan',
             'instansi_unit' => 'Dinas Perhubungan',
             'instansi_sub_unit' => 'Dinas Perhubungan',
-            'instansi_kode_lokasi' => '12.11.12.06.02.01.00',
+            'instansi_kode_lokasi' => '12.11.12.06.02.01.01',
             'label_kode_lokasi' => Setting::DEFAULTS['label_kode_lokasi'],
             'ttd_kepala_nama' => '',
             'ttd_kepala_nip' => '',
