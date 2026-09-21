@@ -16,6 +16,7 @@ class SettingController extends Controller
         'instansi_unit',
         'instansi_sub_unit',
         'instansi_kode_lokasi',
+        'label_kode_lokasi',
         'instansi_alamat',
         'instansi_telepon',
         'instansi_fax',
@@ -32,7 +33,7 @@ class SettingController extends Controller
     {
         $settings = [];
         foreach (self::SETTING_KEYS as $key) {
-            $settings[$key] = Setting::get($key, '');
+            $settings[$key] = Setting::get($key, Setting::DEFAULTS[$key] ?? '');
         }
 
         return Inertia::render('Settings/Edit', [
@@ -50,6 +51,7 @@ class SettingController extends Controller
             'instansi_unit' => ['nullable', 'string', 'max:255'],
             'instansi_sub_unit' => ['nullable', 'string', 'max:255'],
             'instansi_kode_lokasi' => ['nullable', 'string', 'max:50'],
+            'label_kode_lokasi' => ['nullable', 'string', 'max:50'],
             'instansi_alamat' => ['nullable', 'string', 'max:500'],
             'instansi_telepon' => ['nullable', 'string', 'max:50'],
             'instansi_fax' => ['nullable', 'string', 'max:50'],

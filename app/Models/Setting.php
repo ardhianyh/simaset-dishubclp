@@ -11,9 +11,17 @@ class Setting extends Model
         'value',
     ];
 
+    /**
+     * Nilai bawaan untuk setting yang belum pernah disimpan.
+     */
+    public const DEFAULTS = [
+        'label_kode_lokasi' => '12.01.11.12.06.02.01.01',
+    ];
+
     public static function get(string $key, ?string $default = null): ?string
     {
         $setting = static::where('key', $key)->first();
+
         return $setting ? $setting->value : $default;
     }
 

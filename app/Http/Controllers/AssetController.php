@@ -373,13 +373,19 @@ class AssetController extends Controller
             abort(404);
         }
 
-        $asset->load('ruangan:id,nama');
+        $asset->load(['ruangan:id,nama', $asset->getDetailRelationName()]);
+
+        $tahunPerolehan = $asset->tahunPerolehan();
+        $kodeLokasi = Setting::get('label_kode_lokasi', Setting::DEFAULTS['label_kode_lokasi']);
 
         return Inertia::render('Assets/QrLabel', [
             'asset' => $asset,
             'kibType' => $kibType,
             'kibLabel' => Asset::KIB_LABELS[$kibType],
             'publicUrl' => route('public.asset.show', $asset),
+            'instansiNama' => Setting::get('instansi_nama', ''),
+            'instansiUnit' => Setting::get('instansi_unit', ''),
+            'kodeLokasi' => $tahunPerolehan ? $kodeLokasi.'.'.$tahunPerolehan : $kodeLokasi,
         ]);
     }
 

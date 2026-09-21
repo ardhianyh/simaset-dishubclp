@@ -131,6 +131,19 @@ export default function SettingsEdit({ settings }: Props) {
                                 />
                             </div>
                         </div>
+
+                        <div className="space-y-2">
+                            <Label>Kode Lokasi Label QR</Label>
+                            <Input
+                                value={data.label_kode_lokasi ?? ''}
+                                onChange={(e) => handleChange('label_kode_lokasi', e.target.value)}
+                                placeholder="12.01.11.12.06.02.01.01"
+                            />
+                            <p className="text-muted-foreground text-xs">
+                                Dicetak pada label QR aset. Tahun pengadaan tiap aset otomatis
+                                ditambahkan di belakangnya, misal 12.01.11.12.06.02.01.01.2026.
+                            </p>
+                        </div>
                     </CardContent>
                 </Card>
 

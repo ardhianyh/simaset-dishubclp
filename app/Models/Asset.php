@@ -166,4 +166,31 @@ class Asset extends Model
             'L' => 'kibLDetail',
         };
     }
+
+    /**
+     * Tahun pengadaan/perolehan aset, diambil dari field tahun pada detail KIB.
+     * KIB C dan D tidak punya field tahun, jadi memakai tahun dokumen.
+     */
+    public function tahunPerolehan(): ?int
+    {
+        $detail = $this->relationLoaded($this->getDetailRelationName())
+            ? $this->getRelation($this->getDetailRelationName())
+            : $this->detail;
+
+        if (! $detail) {
+            return null;
+        }
+
+        $tahun = match ($this->kib_type) {
+            'A', 'L' => $detail->tahun_pengadaan,
+            'B' => $detail->tahun_pembelian,
+            'E' => $detail->tahun_cetak,
+            'C', 'D' => $detail->dokumen_tanggal
+                ? \Carbon\Carbon::parse($detail->dokumen_tanggal)->year
+                : null,
+            default => null,
+        };
+
+        return $tahun ? (int) $tahun : null;
+    }
 }

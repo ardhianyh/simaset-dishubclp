@@ -10,9 +10,20 @@ interface Props {
     kibType: KibType;
     kibLabel: string;
     publicUrl: string;
+    instansiNama: string;
+    instansiUnit: string;
+    kodeLokasi: string;
 }
 
-export default function QrLabel({ asset, kibType, kibLabel, publicUrl }: Props) {
+export default function QrLabel({
+    asset,
+    kibType,
+    kibLabel,
+    publicUrl,
+    instansiNama,
+    instansiUnit,
+    kodeLokasi,
+}: Props) {
     const kibSlug = `kib-${kibType.toLowerCase()}`;
 
     const handlePrint = () => {
@@ -69,8 +80,8 @@ export default function QrLabel({ asset, kibType, kibLabel, publicUrl }: Props) 
                         className="w-[320px] rounded-lg border-2 border-dashed border-gray-300 bg-white p-6 print:rounded-none print:border-solid print:border-black"
                     >
                         <div className="text-center">
-                            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-600">
-                                Dinas Perhubungan Kab. Cilacap
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-900">
+                                {instansiNama || 'Pemerintah Kabupaten Cilacap'}
                             </h3>
                             <div className="my-1 border-b border-gray-300" />
                         </div>
@@ -83,12 +94,20 @@ export default function QrLabel({ asset, kibType, kibLabel, publicUrl }: Props) 
                             <p className="text-sm font-bold leading-tight text-gray-900">
                                 {asset.nama_barang}
                             </p>
+                            <p className="inline-block border-b border-gray-900 px-4 pb-0.5 font-mono text-xs text-gray-900">
+                                {kodeLokasi}
+                            </p>
                             <p className="font-mono text-xs text-gray-700">
                                 {asset.kode_barang}
                             </p>
                             <p className="text-xs text-gray-500">
                                 {kibLabel}
                             </p>
+                            {instansiUnit && (
+                                <p className="text-xs uppercase text-gray-500">
+                                    {instansiUnit}
+                                </p>
+                            )}
                             {asset.ruangan && (
                                 <p className="text-xs text-gray-500">
                                     {asset.ruangan.nama}
