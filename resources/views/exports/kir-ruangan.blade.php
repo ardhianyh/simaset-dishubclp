@@ -11,6 +11,7 @@
         .footer-col { width: 25%; }
         .header h4 { text-transform: none; }
         .ttd-space { height: 20mm; }
+        .footer-date { margin-bottom: 1mm; }
     </style>
 </head>
 <body>
@@ -182,6 +183,12 @@
         </table>
 
         <div class="footer">
+            <div class="footer-row footer-date">
+                <div class="footer-col"></div>
+                <div class="footer-col"></div>
+                <div class="footer-col"></div>
+                <div class="footer-col">{{ $settings['ttd_kota'] ?: '............' }}, {{ $tanggal }}</div>
+            </div>
             <div class="footer-row">
                 <div class="footer-col">
                     <div class="footer-title">
@@ -211,7 +218,6 @@
                 </div>
                 <div class="footer-col">
                     <div class="footer-title">
-                        <p>{{ $settings['ttd_kota'] ?: '............' }}, {{ $tanggal }}</p>
                         <p>Penanggung Jawab Ruangan</p>
                     </div>
                     <div class="ttd-space"></div>
