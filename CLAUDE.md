@@ -64,6 +64,15 @@ npx tsc --noEmit           # TypeScript check
 - Flash messages: `HandleInertiaRequests` -> `useFlashMessages` hook -> sonner Toaster
 - Private storage for documents (UUID naming)
 
+### Pergeseran Barang (mutasi antar ruangan)
+
+- `asset_mutations` (header BAST) + `asset_mutation_items` + `asset_mutation_documents`; satu BAST bisa memuat banyak barang
+- Nama ruangan & PJ disalin ke tabel mutasi supaya riwayat tetap terbaca walau master berubah
+- Barang hanya berpindah kalau dokumen BAST diunggah — validasi di `AssetMutationController::validateMutation()`
+- Saat mutasi tersimpan: `assets.ruangan_id` + `pj_nama`/`pj_nip` diperbarui dari PJ ruangan tujuan
+- PJ ruangan ada di master `ruangans` (`pj_nama`, `pj_nip`), jadi terisi otomatis di form mutasi
+- Admin-only; tidak ada fitur pembatalan mutasi (riwayat dijaga utuh)
+
 ### Export PDF
 
 - Semua template export berbagi `resources/views/exports/_styles.blade.php` (font, logo, header, tabel, blok TTD) — jangan bikin style sendiri per template
@@ -73,7 +82,10 @@ npx tsc --noEmit           # TypeScript check
 - Harga: KIB A-E dan KIR dibagi 1000 (ikut contoh dokumen resmi); hanya KIB L yang rupiah penuh
 - KIB B urutan kolom: Kode Barang (2) lalu Nama Barang (3) — beda dari KIB lain, ikut template resmi
 - Label QR: logo `public/logo.png` di samping nama instansi; kode lokasi = setting `label_kode_lokasi` + tahun perolehan aset (`Asset::tahunPerolehan()`); baris kode barang digabung nomor register
-- KIR selalu `PER 01 -Januari-<tahun berjalan>` dan tanggal TTD-nya sama; nama bulan ditulis eksplisit karena `APP_LOCALE` beda antar environment (lokal `en`, prod `id`)
+- KIR menampilkan posisi barang pada tanggal yang diminta (`per_tanggal`, default 1 Januari tahun berjalan), direkonstruksi dari riwayat mutasi lewat `ExportController::assetsPadaTanggal()` — bukan posisi terkini
+- Aset dengan tahun perolehan setelah tanggal KIR tidak ikut tercetak
+- Nama bulan ditulis eksplisit karena `APP_LOCALE` beda antar environment (lokal `en`, prod `id`)
+- Helper dokumen resmi (logo, settings, mPDF, terbilang) ada di trait `Concerns\GeneratesOfficialDocuments`
 - `ExportController::raisePdfLimits()` wajib dipanggil sebelum render PDF tabel besar — rekap KIB B (456 baris) butuh ~300MB, sedangkan php-fpm prod efektif 128MB
 
 ### Frontend
