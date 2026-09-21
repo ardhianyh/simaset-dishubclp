@@ -3,7 +3,7 @@
 ## Project Overview
 
 Sistem Manajemen Aset - aplikasi pengelolaan aset dinas (KIB A-L) untuk PNS/petugas lapangan.
-PRD lengkap: `PRD.md`. Reference PDF KIB templates: `kib/`.
+PRD lengkap: `PRD.md`. Reference PDF KIB templates: `docs/kib/` (acuan resmi urutan kolom & format tiap rekap KIB).
 
 ## Tech Stack
 
@@ -63,6 +63,17 @@ npx tsc --noEmit           # TypeScript check
 - Admin middleware alias: `'admin'` -> `EnsureUserIsAdmin`
 - Flash messages: `HandleInertiaRequests` -> `useFlashMessages` hook -> sonner Toaster
 - Private storage for documents (UUID naming)
+
+### Export PDF
+
+- Semua template export berbagi `resources/views/exports/_styles.blade.php` (font, logo, header, tabel, blok TTD) — jangan bikin style sendiri per template
+- Rekap KIB (A-E, L) extend `exports/_layout.blade.php`; KIR ruangan berdiri sendiri karena header/info/TTD-nya beda
+- Logo di kiri atas, blok info instansi rata kiri sejajar logo (bukan indent)
+- Kolom kosong dibiarkan kosong, bukan diisi `-`
+- Harga: KIB A-E dan KIR dibagi 1000 (ikut contoh dokumen resmi); hanya KIB L yang rupiah penuh
+- KIB B urutan kolom: Kode Barang (2) lalu Nama Barang (3) — beda dari KIB lain, ikut template resmi
+- Label QR: kode lokasi = setting `label_kode_lokasi` + tahun perolehan aset (`Asset::tahunPerolehan()`)
+- `ExportController::raisePdfLimits()` wajib dipanggil sebelum render PDF tabel besar — rekap KIB B (456 baris) butuh ~300MB, sedangkan php-fpm prod efektif 128MB
 
 ### Frontend
 
