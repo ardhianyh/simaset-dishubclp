@@ -2,48 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\GeneratesOfficialDocuments;
 use App\Models\Asset;
 use App\Models\AssetGeneratedDocument;
+use App\Models\AssetMutationItem;
 use App\Models\Ruangan;
-use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Mpdf\Mpdf;
 
 class ExportController extends Controller
 {
-    private function getLogoBase64(): ?string
-    {
-        $logoPath = public_path('logo.png');
-        if (file_exists($logoPath)) {
-            $data = base64_encode(file_get_contents($logoPath));
-            $mime = mime_content_type($logoPath);
-
-            return "data:{$mime};base64,{$data}";
-        }
-
-        return null;
-    }
-
-    private function getSettings(): array
-    {
-        $keys = [
-            'instansi_nama', 'instansi_provinsi', 'instansi_kabkota',
-            'instansi_bidang', 'instansi_unit', 'instansi_sub_unit',
-            'instansi_kode_lokasi', 'instansi_alamat', 'instansi_telepon',
-            'instansi_fax', 'instansi_website', 'instansi_email',
-            'ttd_kepala_nama', 'ttd_kepala_nip',
-            'ttd_pengurus_nama', 'ttd_pengurus_nip', 'ttd_kota',
-        ];
-
-        $settings = [];
-        foreach ($keys as $key) {
-            $settings[$key] = Setting::get($key, '');
-        }
-
-        return $settings;
-    }
+    use GeneratesOfficialDocuments;
 
     private function getDetailRelation(string $kibType): string
     {
@@ -134,21 +104,20 @@ class ExportController extends Controller
             }
         }
 
-        $assets = Asset::with([
-            'kibADetail', 'kibBDetail', 'kibCDetail',
-            'kibDDetail', 'kibEDetail', 'kibLDetail',
-        ])
-            ->where('ruangan_id', $ruangan->id)
-            ->orderBy('kode_barang')
-            ->get();
+        // KIR menggambarkan posisi barang pada tanggal tertentu, bukan posisi terkini.
+        $perTanggal = $request->input('per_tanggal')
+            ? \Carbon\Carbon::parse($request->input('per_tanggal'))
+            : now()->startOfYear();
+
+        $assets = $this->assetsPadaTanggal($ruangan, $perTanggal);
 
         $totalHarga = $assets->sum('harga');
         $settings = $this->getSettings();
 
-        // KIR memuat posisi aset per awal tahun; nama bulan ditulis eksplisit
-        // supaya tidak ikut APP_LOCALE yang berbeda antar environment.
-        $tahunKir = now()->year;
-        $tanggal = "01 Januari {$tahunKir}";
+        // Nama bulan ditulis eksplisit supaya tidak ikut APP_LOCALE yang berbeda antar environment.
+        $namaBulan = self::NAMA_BULAN[$perTanggal->month];
+        $tanggal = $perTanggal->format('d')." {$namaBulan} ".$perTanggal->format('Y');
+        $perTanggalLabel = $perTanggal->format('d')." -{$namaBulan}-".$perTanggal->format('Y');
 
         $pdf = Pdf::loadView('exports.kir-ruangan', [
             'ruangan' => $ruangan,
@@ -156,7 +125,7 @@ class ExportController extends Controller
             'totalHarga' => $totalHarga,
             'settings' => $settings,
             'tanggal' => $tanggal,
-            'tahunKir' => $tahunKir,
+            'perTanggalLabel' => $perTanggalLabel,
             'logoBase64' => $this->getLogoBase64(),
             'kepalaNama' => $request->input('kepala_nama', $settings['ttd_kepala_nama']),
             'kepalaNip' => $request->input('kepala_nip', $settings['ttd_kepala_nip']),
@@ -168,25 +137,57 @@ class ExportController extends Controller
             'pjRuanganNip' => $request->input('pj_ruangan_nip', ''),
         ])->setPaper('a4', 'landscape');
 
-        $filename = 'KIR_'.str_replace(' ', '_', $ruangan->nama).'_'.date('Y-m-d').'.pdf';
+        $filename = 'KIR_'.str_replace(' ', '_', $ruangan->nama).'_'.$perTanggal->format('Y-m-d').'.pdf';
 
         return $pdf->download($filename);
     }
 
-    private function makeMpdf(): Mpdf
+    /**
+     * Daftar aset yang berada di sebuah ruangan pada tanggal tertentu.
+     *
+     * Posisi dihitung mundur dari riwayat pergeseran: kalau sebuah aset digeser
+     * setelah tanggal tersebut, maka pada tanggal itu ia masih berada di ruangan
+     * asal pergeseran pertama yang terjadi sesudahnya. Aset yang baru diperoleh
+     * setelah tanggal tersebut tidak ikut tercetak.
+     *
+     * @return \Illuminate\Support\Collection<int, Asset>
+     */
+    private function assetsPadaTanggal(Ruangan $ruangan, \Carbon\Carbon $perTanggal): \Illuminate\Support\Collection
     {
-        ini_set('pcre.backtrack_limit', '5000000');
+        $posisiSaatItu = AssetMutationItem::query()
+            ->join('asset_mutations', 'asset_mutations.id', '=', 'asset_mutation_items.mutation_id')
+            ->whereDate('asset_mutations.tanggal', '>', $perTanggal)
+            ->orderBy('asset_mutations.tanggal')
+            ->orderBy('asset_mutation_items.id')
+            ->get(['asset_mutation_items.asset_id', 'asset_mutation_items.ruangan_asal_id'])
+            ->groupBy('asset_id')
+            ->map(fn ($rows) => $rows->first()->ruangan_asal_id);
 
-        return new Mpdf([
-            'format' => 'A4',
-            'margin_top' => 25.4,
-            'margin_bottom' => 25.4,
-            'margin_left' => 25.4,
-            'margin_right' => 25.4,
-            'default_font' => 'dejavuserif',
-            'default_font_size' => 12,
-            'tempDir' => sys_get_temp_dir().'/mpdf_'.getmypid(),
-        ]);
+        $belumPernahPindah = Asset::where('ruangan_id', $ruangan->id)
+            ->whereNotIn('id', $posisiSaatItu->keys()->all())
+            ->pluck('id');
+
+        $sudahPindahKeluar = $posisiSaatItu
+            ->filter(fn ($ruanganId) => (int) $ruanganId === $ruangan->id)
+            ->keys();
+
+        $ids = $belumPernahPindah->map(fn ($id) => (int) $id)
+            ->merge($sudahPindahKeluar->map(fn ($id) => (int) $id))
+            ->unique();
+
+        return Asset::with([
+            'kibADetail', 'kibBDetail', 'kibCDetail',
+            'kibDDetail', 'kibEDetail', 'kibLDetail',
+        ])
+            ->whereIn('id', $ids)
+            ->orderBy('kode_barang')
+            ->get()
+            ->filter(function (Asset $asset) use ($perTanggal) {
+                $tahun = $asset->tahunPerolehan();
+
+                return $tahun === null || $tahun <= $perTanggal->year;
+            })
+            ->values();
     }
 
     public function paktaIntegritas(Request $request, Asset $asset)
@@ -406,68 +407,5 @@ class ExportController extends Controller
         );
 
         return [$pdfContent, $filename];
-    }
-
-    private function tanggalTerbilang(string $date): string
-    {
-        $carbon = \Carbon\Carbon::parse($date);
-
-        $hari = [
-            'Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
-            'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat',
-            'Saturday' => 'Sabtu',
-        ];
-
-        $bulan = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
-        ];
-
-        $tglAngka = [
-            1 => 'satu', 2 => 'dua', 3 => 'tiga', 4 => 'empat', 5 => 'lima',
-            6 => 'enam', 7 => 'tujuh', 8 => 'delapan', 9 => 'sembilan', 10 => 'sepuluh',
-            11 => 'sebelas', 12 => 'dua belas', 13 => 'tiga belas', 14 => 'empat belas',
-            15 => 'lima belas', 16 => 'enam belas', 17 => 'tujuh belas', 18 => 'delapan belas',
-            19 => 'sembilan belas', 20 => 'dua puluh', 21 => 'dua puluh satu',
-            22 => 'dua puluh dua', 23 => 'dua puluh tiga', 24 => 'dua puluh empat',
-            25 => 'dua puluh lima', 26 => 'dua puluh enam', 27 => 'dua puluh tujuh',
-            28 => 'dua puluh delapan', 29 => 'dua puluh sembilan', 30 => 'tiga puluh',
-            31 => 'tiga puluh satu',
-        ];
-
-        $tahunTerbilang = $this->angkaTerbilang($carbon->year);
-
-        $namaHari = $hari[$carbon->format('l')] ?? $carbon->format('l');
-        $tglTerbilang = $tglAngka[$carbon->day] ?? $carbon->day;
-        $bulanNama = $bulan[$carbon->month] ?? $carbon->month;
-
-        return "{$namaHari} tanggal {$tglTerbilang} bulan {$bulanNama} tahun {$tahunTerbilang} ({$carbon->format('d-m-Y')})";
-    }
-
-    private function angkaTerbilang(int $angka): string
-    {
-        $huruf = [
-            '', 'satu', 'dua', 'tiga', 'empat', 'lima',
-            'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas',
-        ];
-
-        if ($angka < 12) {
-            return $huruf[$angka];
-        } elseif ($angka < 20) {
-            return $this->angkaTerbilang($angka - 10).' belas';
-        } elseif ($angka < 100) {
-            return $this->angkaTerbilang(intdiv($angka, 10)).' puluh '.$this->angkaTerbilang($angka % 10);
-        } elseif ($angka < 200) {
-            return 'seratus '.$this->angkaTerbilang($angka - 100);
-        } elseif ($angka < 1000) {
-            return $this->angkaTerbilang(intdiv($angka, 100)).' ratus '.$this->angkaTerbilang($angka % 100);
-        } elseif ($angka < 2000) {
-            return 'seribu '.$this->angkaTerbilang($angka - 1000);
-        } elseif ($angka < 1000000) {
-            return $this->angkaTerbilang(intdiv($angka, 1000)).' ribu '.$this->angkaTerbilang($angka % 1000);
-        }
-
-        return trim((string) $angka);
     }
 }

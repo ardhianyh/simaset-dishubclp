@@ -94,6 +94,7 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
     const [kirRuanganId, setKirRuanganId] = useState<string>(
         filters.ruangan_id || (ruangans[0]?.id ? String(ruangans[0].id) : '')
     );
+    const [kirPerTanggal, setKirPerTanggal] = useState(`${new Date().getFullYear()}-01-01`);
     const [kirKepalaNama, setKirKepalaNama] = useState(() => localStorage.getItem('kir_kepala_nama') ?? ttdSettings.kepala_nama);
     const [kirKepalaNip, setKirKepalaNip] = useState(() => localStorage.getItem('kir_kepala_nip') ?? ttdSettings.kepala_nip);
     const [kirPengurusDinasNama, setKirPengurusDinasNama] = useState(() => localStorage.getItem('kir_pengurus_dinas_nama') ?? ttdSettings.pengurus_nama);
@@ -113,6 +114,7 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
         localStorage.setItem('kir_pj_ruangan_nama', kirPjNama);
         localStorage.setItem('kir_pj_ruangan_nip', kirPjNip);
         const params = new URLSearchParams();
+        if (kirPerTanggal) params.set('per_tanggal', kirPerTanggal);
         if (kirKepalaNama) params.set('kepala_nama', kirKepalaNama);
         if (kirKepalaNip) params.set('kepala_nip', kirKepalaNip);
         if (kirPengurusDinasNama) params.set('pengurus_nama', kirPengurusDinasNama);
@@ -338,6 +340,18 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
                                     </SelectContent>
                                 </Select>
                             )}
+                        </div>
+                        <div className="space-y-1.5">
+                            <p className="text-sm font-medium">Posisi Per Tanggal</p>
+                            <Input
+                                type="date"
+                                value={kirPerTanggal}
+                                onChange={(e) => setKirPerTanggal(e.target.value)}
+                            />
+                            <p className="text-muted-foreground text-xs">
+                                KIR menampilkan isi ruangan pada tanggal ini. Pakai 1 Januari untuk laporan
+                                tahunan, atau tanggal hari ini untuk melihat kondisi terkini.
+                            </p>
                         </div>
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center"><div className="w-full border-t" /></div>
