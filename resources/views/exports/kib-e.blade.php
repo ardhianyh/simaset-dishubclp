@@ -59,18 +59,18 @@
                 <td>{{ $asset->nama_barang }}</td>
                 <td>{{ $asset->kode_barang }}</td>
                 <td>{{ $asset->nomor_register }}</td>
-                <td>{{ $d?->judul_pencipta ?? '-' }}</td>
-                <td>{{ $d?->spesifikasi ?? '-' }}</td>
-                <td>{{ $d?->asal_daerah ?? '-' }}</td>
-                <td>{{ $d?->pencipta ?? '-' }}</td>
-                <td>{{ $d?->bahan ?? '-' }}</td>
-                <td>{{ $d?->jenis ?? '-' }}</td>
-                <td>{{ $d?->ukuran ?? '-' }}</td>
-                <td class="center">{{ $d?->jumlah ?? '-' }}</td>
+                <td>{{ $d?->judul_pencipta }}</td>
+                <td>{{ $d?->spesifikasi }}</td>
+                <td>{{ $d?->asal_daerah }}</td>
+                <td>{{ $d?->pencipta }}</td>
+                <td>{{ $d?->bahan }}</td>
+                <td>{{ $d?->jenis }}</td>
+                <td>{{ $d?->ukuran }}</td>
+                <td class="center">{{ $d?->jumlah }}</td>
                 <td>{{ $asset->asal_usul }}</td>
-                <td class="center">{{ $d?->tahun_cetak ?? '-' }}</td>
-                <td class="number">{{ number_format($asset->harga, 2, ',', '.') }}</td>
-                <td>{{ $asset->keterangan ?? '-' }}</td>
+                <td class="center">{{ $d?->tahun_cetak }}</td>
+                <td class="number">{{ number_format($asset->harga / 1000, 2, ',', '.') }}</td>
+                <td>{{ $asset->keterangan }}</td>
             </tr>
         @empty
             <tr><td colspan="16" style="text-align:center">Tidak ada data</td></tr>
@@ -79,7 +79,7 @@
     <tfoot>
         <tr>
             <td colspan="14" style="text-align:right; font-weight:bold;">Jumlah Harga</td>
-            <td class="number">{{ number_format($totalHarga, 2, ',', '.') }}</td>
+            <td class="number">{{ number_format($totalHarga / 1000, 2, ',', '.') }}</td>
             <td></td>
         </tr>
     </tfoot>

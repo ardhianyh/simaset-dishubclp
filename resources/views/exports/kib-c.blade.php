@@ -56,19 +56,19 @@
                 <td>{{ $asset->nama_barang }}</td>
                 <td>{{ $asset->kode_barang }}</td>
                 <td>{{ $asset->nomor_register }}</td>
-                <td class="center">{{ $d?->kondisi ? str_replace(['Baik', 'Kurang Baik', 'Rusak Berat'], ['B', 'KB', 'RB'], $d->kondisi) : '-' }}</td>
+                <td class="center">{{ $d?->kondisi ? str_replace(['Baik', 'Kurang Baik', 'Rusak Berat'], ['B', 'KB', 'RB'], $d->kondisi) : '' }}</td>
                 <td class="center">{{ $d?->bertingkat ? 'Ya' : 'Tidak' }}</td>
                 <td class="center">{{ $d?->beton ? 'Ya' : 'Tidak' }}</td>
-                <td class="number">{{ $d?->luas_lantai_m2 ? number_format($d->luas_lantai_m2, 2, ',', '.') : '-' }}</td>
-                <td>{{ $d?->alamat ?? '-' }}</td>
-                <td class="center">{{ $d?->dokumen_tanggal ? \Carbon\Carbon::parse($d->dokumen_tanggal)->format('d/m/Y') : '-' }}</td>
-                <td>{{ $d?->dokumen_nomor ?? '-' }}</td>
-                <td class="number">-</td>
-                <td>{{ $d?->status_tanah ?? '-' }}</td>
-                <td>{{ $d?->nomor_kode_tanah ?? '-' }}</td>
+                <td class="number">{{ $d?->luas_lantai_m2 ? number_format($d->luas_lantai_m2, 2, ',', '.') : '' }}</td>
+                <td>{{ $d?->alamat }}</td>
+                <td class="center">{{ $d?->dokumen_tanggal ? \Carbon\Carbon::parse($d->dokumen_tanggal)->format('d/m/Y') : '' }}</td>
+                <td>{{ $d?->dokumen_nomor }}</td>
+                <td class="number"></td>
+                <td>{{ $d?->status_tanah }}</td>
+                <td>{{ $d?->nomor_kode_tanah }}</td>
                 <td>{{ $asset->asal_usul }}</td>
-                <td class="number">{{ number_format($asset->harga, 2, ',', '.') }}</td>
-                <td>{{ $asset->keterangan ?? '-' }}</td>
+                <td class="number">{{ number_format($asset->harga / 1000, 2, ',', '.') }}</td>
+                <td>{{ $asset->keterangan }}</td>
             </tr>
         @empty
             <tr><td colspan="17" style="text-align:center">Tidak ada data</td></tr>
@@ -77,7 +77,7 @@
     <tfoot>
         <tr>
             <td colspan="15" style="text-align:right; font-weight:bold;">Jumlah Harga</td>
-            <td class="number">{{ number_format($totalHarga, 2, ',', '.') }}</td>
+            <td class="number">{{ number_format($totalHarga / 1000, 2, ',', '.') }}</td>
             <td></td>
         </tr>
     </tfoot>

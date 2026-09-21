@@ -3,41 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>{{ $kibLabel }}</title>
+    @include('exports._styles')
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Times New Roman', Times, serif; font-size: 9pt; color: #000; }
-        .page { padding: 10mm 8mm; }
-
-        .header-wrapper { margin-bottom: 4mm; min-height: 22mm; position: relative; }
-        .header-logo { position: absolute; top: 0; left: 0; width: 18mm; height: auto; }
-        .info-section { padding-left: 22mm; }
-        .header { text-align: center; }
-        .header h2 { font-size: 11pt; font-weight: bold; text-transform: uppercase; margin-bottom: 1mm; }
-        .header h3 { font-size: 11pt; font-weight: bold; text-transform: uppercase; margin-bottom: 1mm; }
-        .header h4 { font-size: 11pt; font-weight: bold; text-transform: uppercase; margin-bottom: 3mm; }
-
-        .info-section { margin-bottom: 4mm; font-size: 9pt; }
-        .info-section table { border-collapse: collapse; }
-        .info-section td { padding: 0.5px 2px; vertical-align: top; }
-        .info-section .label { font-weight: bold; white-space: nowrap; }
-        .info-section .separator { width: 10px; text-align: center; }
-
-        table.data { width: 100%; border-collapse: collapse; margin-bottom: 4mm; font-size: 7.5pt; }
-        table.data th, table.data td { border: 1px solid #000; padding: 2px 3px; vertical-align: top; }
-        table.data th { background-color: #e8e8e8; font-weight: bold; text-align: center; font-size: 7pt; }
-        table.data td.number { text-align: right; font-family: 'Courier New', monospace; }
-        table.data td.center { text-align: center; }
-        table.data tfoot td { font-weight: bold; }
-        table.data tr.kolom-nomor td { text-align: center; font-weight: bold; font-size: 7pt; background-color: #f0f0f0; }
-
-        .footer { margin-top: 6mm; }
-        .footer-row { display: table; width: 100%; }
-        .footer-left, .footer-right { display: table-cell; width: 50%; vertical-align: top; }
-        .footer-right { text-align: center; }
-        .footer-left { text-align: center; }
-        .ttd-space { height: 25mm; }
-        .ttd-name { font-weight: bold; text-decoration: underline; }
-        .ttd-nip { font-size: 8pt; }
+        .footer-col { width: 50%; }
+        .info-section .kode-lokasi td { padding-top: 2mm; }
     </style>
     @yield('styles')
 </head>
@@ -81,7 +50,7 @@
                     <td class="separator">:</td>
                     <td>{{ $settings['instansi_sub_unit'] }}</td>
                 </tr>
-                <tr>
+                <tr class="kode-lokasi">
                     <td class="label">NO. KODE LOKASI</td>
                     <td class="separator">:</td>
                     <td>{{ $settings['instansi_kode_lokasi'] }}</td>
@@ -93,19 +62,19 @@
 
         <div class="footer">
             <div class="footer-row">
-                <div class="footer-left">
+                <div class="footer-col">
                     <p>MENGETAHUI</p>
                     <p>KEPALA DINAS</p>
                     <div class="ttd-space"></div>
-                    <p class="ttd-name">{{ $settings['ttd_kepala_nama'] }}</p>
-                    <p class="ttd-nip">NIP. {{ $settings['ttd_kepala_nip'] }}</p>
+                    <p class="ttd-name{{ $settings['ttd_kepala_nama'] ? '' : ' ttd-empty' }}">{!! $settings['ttd_kepala_nama'] ? e($settings['ttd_kepala_nama']) : '&nbsp;' !!}</p>
+                    <p class="ttd-nip">{!! $settings['ttd_kepala_nip'] ? 'NIP. '.e($settings['ttd_kepala_nip']) : '&nbsp;' !!}</p>
                 </div>
-                <div class="footer-right">
+                <div class="footer-col">
                     <p>{{ $settings['ttd_kota'] ?: '............' }}, {{ $tanggal }}</p>
                     <p>PETUGAS PENGURUS BARANG</p>
                     <div class="ttd-space"></div>
-                    <p class="ttd-name">{{ $settings['ttd_pengurus_nama'] }}</p>
-                    <p class="ttd-nip">NIP. {{ $settings['ttd_pengurus_nip'] }}</p>
+                    <p class="ttd-name{{ $settings['ttd_pengurus_nama'] ? '' : ' ttd-empty' }}">{!! $settings['ttd_pengurus_nama'] ? e($settings['ttd_pengurus_nama']) : '&nbsp;' !!}</p>
+                    <p class="ttd-nip">{!! $settings['ttd_pengurus_nip'] ? 'NIP. '.e($settings['ttd_pengurus_nip']) : '&nbsp;' !!}</p>
                 </div>
             </div>
         </div>

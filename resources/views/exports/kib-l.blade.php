@@ -43,14 +43,14 @@
                 <td>{{ $asset->nama_barang }}</td>
                 <td>{{ $asset->kode_barang }}</td>
                 <td>{{ $asset->nomor_register }}</td>
-                <td class="center">{{ $d?->tahun_pengadaan ?? '-' }}</td>
-                <td>{{ $d?->judul_nama ?? '-' }}</td>
-                <td>{{ $d?->pencipta ?? '-' }}</td>
-                <td>{{ $d?->spesifikasi ?? '-' }}</td>
-                <td>{{ $d?->kondisi ?? '-' }}</td>
+                <td class="center">{{ $d?->tahun_pengadaan }}</td>
+                <td>{{ $d?->judul_nama }}</td>
+                <td>{{ $d?->pencipta }}</td>
+                <td>{{ $d?->spesifikasi }}</td>
+                <td>{{ $d?->kondisi }}</td>
                 <td>{{ $asset->asal_usul }}</td>
-                <td class="number">{{ number_format($asset->harga, 0, ',', '.') }}</td>
-                <td>{{ $asset->keterangan ?? '-' }}</td>
+                <td class="number">{{ number_format($asset->harga, 2, ',', '.') }}</td>
+                <td>{{ $asset->keterangan }}</td>
             </tr>
         @empty
             <tr><td colspan="12" style="text-align:center">Tidak ada data</td></tr>
@@ -59,7 +59,7 @@
     <tfoot>
         <tr>
             <td colspan="10" style="text-align:right; font-weight:bold;">Jumlah Harga</td>
-            <td class="number">{{ number_format($totalHarga, 0, ',', '.') }}</td>
+            <td class="number">{{ number_format($totalHarga, 2, ',', '.') }}</td>
             <td></td>
         </tr>
     </tfoot>

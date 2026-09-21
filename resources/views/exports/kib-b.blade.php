@@ -5,8 +5,8 @@
     <thead>
         <tr>
             <th rowspan="2" style="width:25px">No.</th>
-            <th rowspan="2">Jenis Barang /<br>Nama Barang</th>
             <th rowspan="2">Kode Barang<br>1.3.</th>
+            <th rowspan="2">Jenis Barang /<br>Nama Barang</th>
             <th rowspan="2">Nomor<br>Register</th>
             <th rowspan="2">Merk/<br>Type</th>
             <th rowspan="2">Ukuran/<br>CC</th>
@@ -48,21 +48,21 @@
             @php $d = $asset->kibBDetail; @endphp
             <tr>
                 <td class="center">{{ $i + 1 }}</td>
-                <td>{{ $asset->nama_barang }}</td>
                 <td>{{ $asset->kode_barang }}</td>
+                <td>{{ $asset->nama_barang }}</td>
                 <td>{{ $asset->nomor_register }}</td>
-                <td>{{ $d?->merk_type ?? '-' }}</td>
-                <td>{{ $d?->ukuran_cc ?? '-' }}</td>
-                <td>{{ $d?->bahan ?? '-' }}</td>
-                <td class="center">{{ $d?->tahun_pembelian ?? '-' }}</td>
-                <td>{{ $d?->nomor_pabrik ?? '-' }}</td>
-                <td>{{ $d?->nomor_rangka ?? '-' }}</td>
-                <td>{{ $d?->nomor_mesin ?? '-' }}</td>
-                <td>{{ $d?->nomor_polisi ?? '-' }}</td>
-                <td>{{ $d?->nomor_bpkb ?? '-' }}</td>
+                <td>{{ $d?->merk_type }}</td>
+                <td>{{ $d?->ukuran_cc }}</td>
+                <td>{{ $d?->bahan }}</td>
+                <td class="center">{{ $d?->tahun_pembelian }}</td>
+                <td>{{ $d?->nomor_pabrik }}</td>
+                <td>{{ $d?->nomor_rangka }}</td>
+                <td>{{ $d?->nomor_mesin }}</td>
+                <td>{{ $d?->nomor_polisi }}</td>
+                <td>{{ $d?->nomor_bpkb }}</td>
                 <td>{{ $asset->asal_usul }}</td>
-                <td class="number">{{ number_format($asset->harga, 2, ',', '.') }}</td>
-                <td>{{ $asset->keterangan ?? '-' }}</td>
+                <td class="number">{{ number_format($asset->harga / 1000, 2, ',', '.') }}</td>
+                <td>{{ $asset->keterangan }}</td>
             </tr>
         @empty
             <tr><td colspan="16" style="text-align:center">Tidak ada data</td></tr>
@@ -71,7 +71,7 @@
     <tfoot>
         <tr>
             <td colspan="14" style="text-align:right; font-weight:bold;">Jumlah Harga</td>
-            <td class="number">{{ number_format($totalHarga, 2, ',', '.') }}</td>
+            <td class="number">{{ number_format($totalHarga / 1000, 2, ',', '.') }}</td>
             <td></td>
         </tr>
     </tfoot>

@@ -51,16 +51,16 @@
                 <td>{{ $asset->nama_barang }}</td>
                 <td>{{ $asset->kode_barang }}</td>
                 <td>{{ $asset->nomor_register }}</td>
-                <td class="number">{{ $d?->luas_m2 ? number_format($d->luas_m2, 2, ',', '.') : '-' }}</td>
-                <td class="center">{{ $d?->tahun_pengadaan ?? '-' }}</td>
-                <td>{{ $d?->alamat ?? '-' }}</td>
-                <td>{{ $d?->hak_tanah ?? '-' }}</td>
-                <td class="center">{{ $d?->sertifikat_tanggal ? \Carbon\Carbon::parse($d->sertifikat_tanggal)->format('d/m/Y') : '-' }}</td>
-                <td>{{ $d?->sertifikat_nomor ?? '-' }}</td>
-                <td>{{ $d?->penggunaan ?? '-' }}</td>
+                <td class="number">{{ $d?->luas_m2 ? number_format($d->luas_m2, 2, ',', '.') : '' }}</td>
+                <td class="center">{{ $d?->tahun_pengadaan }}</td>
+                <td>{{ $d?->alamat }}</td>
+                <td>{{ $d?->hak_tanah }}</td>
+                <td class="center">{{ $d?->sertifikat_tanggal ? \Carbon\Carbon::parse($d->sertifikat_tanggal)->format('d/m/Y') : '' }}</td>
+                <td>{{ $d?->sertifikat_nomor }}</td>
+                <td>{{ $d?->penggunaan }}</td>
                 <td>{{ $asset->asal_usul }}</td>
-                <td class="number">{{ number_format($asset->harga, 2, ',', '.') }}</td>
-                <td>{{ $asset->keterangan ?? '-' }}</td>
+                <td class="number">{{ number_format($asset->harga / 1000, 2, ',', '.') }}</td>
+                <td>{{ $asset->keterangan }}</td>
             </tr>
         @empty
             <tr><td colspan="14" style="text-align:center">Tidak ada data</td></tr>
@@ -69,7 +69,7 @@
     <tfoot>
         <tr>
             <td colspan="12" style="text-align:right; font-weight:bold;">Jumlah Harga</td>
-            <td class="number">{{ number_format($totalHarga, 2, ',', '.') }}</td>
+            <td class="number">{{ number_format($totalHarga / 1000, 2, ',', '.') }}</td>
             <td></td>
         </tr>
     </tfoot>
