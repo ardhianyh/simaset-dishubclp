@@ -25,6 +25,9 @@ export default function QrLabel({
     kodeLokasi,
 }: Props) {
     const kibSlug = `kib-${kibType.toLowerCase()}`;
+    const kodeBarangLengkap = asset.nomor_register
+        ? `${asset.kode_barang}.${asset.nomor_register}`
+        : asset.kode_barang;
 
     const handlePrint = () => {
         window.print();
@@ -80,9 +83,16 @@ export default function QrLabel({
                         className="w-[320px] rounded-lg border-2 border-dashed border-gray-300 bg-white p-6 print:rounded-none print:border-solid print:border-black"
                     >
                         <div className="text-center">
-                            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-900">
-                                {instansiNama || 'Pemerintah Kabupaten Cilacap'}
-                            </h3>
+                            <div className="flex items-center justify-center gap-2">
+                                <img
+                                    src="/logo.png"
+                                    alt="Logo Kabupaten Cilacap"
+                                    className="h-9 w-auto shrink-0"
+                                />
+                                <h3 className="text-xs font-bold uppercase leading-tight tracking-wide text-gray-900">
+                                    {instansiNama || 'Pemerintah Kabupaten Cilacap'}
+                                </h3>
+                            </div>
                             <div className="my-1 border-b border-gray-300" />
                         </div>
 
@@ -98,7 +108,7 @@ export default function QrLabel({
                                 {kodeLokasi}
                             </p>
                             <p className="font-mono text-xs text-gray-700">
-                                {asset.kode_barang}
+                                {kodeBarangLengkap}
                             </p>
                             <p className="text-xs text-gray-500">
                                 {kibLabel}
