@@ -22,7 +22,7 @@
             <div class="header">
                 <h2>{{ $settings['instansi_kabkota'] ?: 'KABUPATEN ...' }}</h2>
                 <h3>KARTU INVENTARIS RUANGAN</h3>
-                <h4>PER {{ now()->format('d') }} -{{ ucfirst(now()->translatedFormat('F')) }}-{{ now()->format('Y') }}</h4>
+                <h4>PER 01 -Januari-{{ $tahunKir }}</h4>
             </div>
         </div>
 

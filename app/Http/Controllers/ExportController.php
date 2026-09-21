@@ -144,7 +144,11 @@ class ExportController extends Controller
 
         $totalHarga = $assets->sum('harga');
         $settings = $this->getSettings();
-        $tanggal = now()->translatedFormat('d F Y');
+
+        // KIR memuat posisi aset per awal tahun; nama bulan ditulis eksplisit
+        // supaya tidak ikut APP_LOCALE yang berbeda antar environment.
+        $tahunKir = now()->year;
+        $tanggal = "01 Januari {$tahunKir}";
 
         $pdf = Pdf::loadView('exports.kir-ruangan', [
             'ruangan' => $ruangan,
@@ -152,6 +156,7 @@ class ExportController extends Controller
             'totalHarga' => $totalHarga,
             'settings' => $settings,
             'tanggal' => $tanggal,
+            'tahunKir' => $tahunKir,
             'logoBase64' => $this->getLogoBase64(),
             'kepalaNama' => $request->input('kepala_nama', $settings['ttd_kepala_nama']),
             'kepalaNip' => $request->input('kepala_nip', $settings['ttd_kepala_nip']),
