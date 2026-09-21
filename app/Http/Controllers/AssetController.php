@@ -193,12 +193,19 @@ class AssetController extends Controller
             ->get()
             ->keyBy('jenis');
 
+        $riwayatMutasi = $asset->mutationItems()
+            ->with('mutation:id,nomor_bast,tanggal,ruangan_asal_nama,ruangan_tujuan_nama,pj_tujuan_nama')
+            ->get()
+            ->sortBy(fn ($item) => $item->mutation?->tanggal)
+            ->values();
+
         return Inertia::render('Assets/Show', [
             'asset' => $asset,
             'kibType' => $kibType,
             'kibLabel' => Asset::KIB_LABELS[$kibType],
             'jenisOptions' => \App\Models\AssetDocument::JENIS_OPTIONS,
             'generatedDocuments' => $generatedDocuments,
+            'riwayatMutasi' => $riwayatMutasi,
         ]);
     }
 

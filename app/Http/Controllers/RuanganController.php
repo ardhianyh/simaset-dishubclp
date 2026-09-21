@@ -40,6 +40,8 @@ class RuanganController extends Controller
         $validated = $request->validate([
             'nama' => ['required', 'string', 'max:255', 'unique:ruangans,nama'],
             'deskripsi' => ['nullable', 'string', 'max:1000'],
+            'pj_nama' => ['nullable', 'string', 'max:255'],
+            'pj_nip' => ['nullable', 'string', 'max:50'],
         ]);
 
         Ruangan::create($validated);
@@ -61,6 +63,8 @@ class RuanganController extends Controller
         $validated = $request->validate([
             'nama' => ['required', 'string', 'max:255', Rule::unique('ruangans', 'nama')->ignore($ruangan->id)],
             'deskripsi' => ['nullable', 'string', 'max:1000'],
+            'pj_nama' => ['nullable', 'string', 'max:255'],
+            'pj_nip' => ['nullable', 'string', 'max:50'],
         ]);
 
         $ruangan->update($validated);
@@ -76,6 +80,10 @@ class RuanganController extends Controller
 
         if ($ruangan->assets()->exists()) {
             return back()->with('error', 'Ruangan tidak dapat dihapus karena masih memiliki aset yang terdaftar.');
+        }
+
+        if ($ruangan->mutasiMasuk()->exists() || $ruangan->mutasiKeluar()->exists()) {
+            return back()->with('error', 'Ruangan tidak dapat dihapus karena tercatat pada riwayat pergeseran barang.');
         }
 
         $ruangan->delete();

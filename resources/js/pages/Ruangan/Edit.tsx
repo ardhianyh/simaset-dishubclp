@@ -17,6 +17,8 @@ export default function RuanganEdit({ ruangan }: Props) {
     const { data, setData, put, processing, errors } = useForm({
         nama: ruangan.nama,
         deskripsi: ruangan.deskripsi || '',
+        pj_nama: ruangan.pj_nama || '',
+        pj_nip: ruangan.pj_nip || '',
     });
 
     function handleSubmit(e: FormEvent) {
@@ -60,6 +62,33 @@ export default function RuanganEdit({ ruangan }: Props) {
                                 {errors.deskripsi && (
                                     <p className="text-sm text-red-600">{errors.deskripsi}</p>
                                 )}
+                            </div>
+
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="pj_nama">Penanggung Jawab Ruangan</Label>
+                                    <Input
+                                        id="pj_nama"
+                                        value={data.pj_nama}
+                                        onChange={(e) => setData('pj_nama', e.target.value)}
+                                        placeholder="Nama lengkap"
+                                    />
+                                    {errors.pj_nama && (
+                                        <p className="text-sm text-red-600">{errors.pj_nama}</p>
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="pj_nip">NIP Penanggung Jawab</Label>
+                                    <Input
+                                        id="pj_nip"
+                                        value={data.pj_nip}
+                                        onChange={(e) => setData('pj_nip', e.target.value)}
+                                        placeholder="NIP"
+                                    />
+                                    {errors.pj_nip && (
+                                        <p className="text-sm text-red-600">{errors.pj_nip}</p>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="flex items-center gap-2 pt-4">

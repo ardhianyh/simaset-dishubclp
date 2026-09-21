@@ -17,6 +17,7 @@ import {
     LogOut,
     ChevronDown,
     Search,
+    ArrowLeftRight,
 } from 'lucide-react';
 import {
     Sidebar,
@@ -165,6 +166,14 @@ export default function AuthenticatedLayout({
                                             <Link href="/ruangan">
                                                 <DoorOpen />
                                                 <span>Ruangan</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton asChild isActive={isActive('/mutasi')}>
+                                            <Link href="/mutasi">
+                                                <ArrowLeftRight />
+                                                <span>Pergeseran Barang</span>
                                             </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>

@@ -12,12 +12,26 @@ import PhotoSection from './Partials/PhotoSection';
 import PaktaIntegritasDialog from './Partials/PaktaIntegritasDialog';
 import BastDialog from './Partials/BastDialog';
 
+interface RiwayatMutasi {
+    id: number;
+    pj_asal_nama?: string | null;
+    mutation?: {
+        id: number;
+        nomor_bast: string;
+        tanggal: string;
+        ruangan_asal_nama: string;
+        ruangan_tujuan_nama: string;
+        pj_tujuan_nama?: string | null;
+    };
+}
+
 interface Props {
     asset: Asset;
     kibType: KibType;
     kibLabel: string;
     jenisOptions: string[];
     generatedDocuments?: Record<string, AssetGeneratedDocument>;
+    riwayatMutasi?: RiwayatMutasi[];
 }
 
 function formatCurrency(value: number): string {
@@ -46,7 +60,7 @@ function Field({ label, value }: { label: string; value?: string | number | bool
     );
 }
 
-export default function AssetShow({ asset, kibType, kibLabel, jenisOptions, generatedDocuments }: Props) {
+export default function AssetShow({ asset, kibType, kibLabel, jenisOptions, generatedDocuments, riwayatMutasi = [] }: Props) {
     const kibSlug = `kib-${kibType.toLowerCase()}`;
     const detailKey = `kib_${kibType.toLowerCase()}_detail` as keyof Asset;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -232,6 +246,42 @@ export default function AssetShow({ asset, kibType, kibLabel, jenisOptions, gene
                                 <Field label="Latitude" value={asset.latitude} />
                                 <Field label="Longitude" value={asset.longitude} />
                             </dl>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {riwayatMutasi.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Riwayat Pergeseran Ruangan</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ol className="space-y-3">
+                                {riwayatMutasi.map((riwayat) => (
+                                    <li key={riwayat.id} className="flex flex-wrap items-center gap-2 text-sm">
+                                        <span className="text-muted-foreground w-32 shrink-0 text-xs">
+                                            {riwayat.mutation
+                                                ? new Date(riwayat.mutation.tanggal).toLocaleDateString('id-ID', {
+                                                      day: '2-digit',
+                                                      month: 'long',
+                                                      year: 'numeric',
+                                                  })
+                                                : '-'}
+                                        </span>
+                                        <span>{riwayat.mutation?.ruangan_asal_nama}</span>
+                                        <span className="text-muted-foreground">&rarr;</span>
+                                        <span className="font-medium">{riwayat.mutation?.ruangan_tujuan_nama}</span>
+                                        {riwayat.mutation && (
+                                            <Link
+                                                href={`/mutasi/${riwayat.mutation.id}`}
+                                                className="text-muted-foreground hover:text-foreground text-xs underline"
+                                            >
+                                                BAST {riwayat.mutation.nomor_bast}
+                                            </Link>
+                                        )}
+                                    </li>
+                                ))}
+                            </ol>
                         </CardContent>
                     </Card>
                 )}

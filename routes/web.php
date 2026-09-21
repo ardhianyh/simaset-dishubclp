@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\AssetDocumentController;
+use App\Http\Controllers\AssetMutationController;
 use App\Http\Controllers\AssetSearchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
@@ -74,6 +75,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('ruangan', RuanganController::class)->except(['show']);
     Route::resource('users', UserController::class)->except(['show']);
     Route::resource('pejabats', PejabatController::class)->except(['show']);
+
+    // Pergeseran barang antar ruangan (wajib disertai BAST)
+    Route::get('/mutasi', [AssetMutationController::class, 'index'])->name('mutasi.index');
+    Route::get('/mutasi/create', [AssetMutationController::class, 'create'])->name('mutasi.create');
+    Route::get('/mutasi/draft-bast', [AssetMutationController::class, 'draftBast'])->name('mutasi.draft-bast');
+    Route::post('/mutasi', [AssetMutationController::class, 'store'])->name('mutasi.store');
+    Route::get('/mutasi/{mutation}', [AssetMutationController::class, 'show'])->name('mutasi.show');
+    Route::get('/mutasi/{mutation}/bast', [AssetMutationController::class, 'bast'])->name('mutasi.bast');
+    Route::get('/mutasi/{mutation}/dokumen/{document}', [AssetMutationController::class, 'document'])->name('mutasi.document');
 
     Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
     Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');

@@ -25,10 +25,50 @@ export interface Ruangan {
     id: number;
     nama: string;
     deskripsi?: string;
+    pj_nama?: string | null;
+    pj_nip?: string | null;
     users_count?: number;
     users?: User[];
     created_at?: string;
     updated_at?: string;
+}
+
+export interface AssetMutationDocument {
+    id: number;
+    jenis_dokumen: string;
+    nama_asli: string;
+    ukuran_bytes: number;
+    mime_type?: string | null;
+    created_at?: string;
+}
+
+export interface AssetMutationItem {
+    id: number;
+    asset_id: number;
+    ruangan_asal_nama?: string | null;
+    pj_asal_nama?: string | null;
+    pj_asal_nip?: string | null;
+    asset?: Asset;
+}
+
+export interface AssetMutation {
+    id: number;
+    nomor_bast: string;
+    tanggal: string;
+    ruangan_asal_id?: number | null;
+    ruangan_asal_nama: string;
+    ruangan_tujuan_id?: number | null;
+    ruangan_tujuan_nama: string;
+    pj_asal_nama?: string | null;
+    pj_asal_nip?: string | null;
+    pj_tujuan_nama?: string | null;
+    pj_tujuan_nip?: string | null;
+    keterangan?: string | null;
+    items_count?: number;
+    items?: AssetMutationItem[];
+    documents?: AssetMutationDocument[];
+    creator?: User;
+    created_at?: string;
 }
 
 export interface PaginatedData<T> {
