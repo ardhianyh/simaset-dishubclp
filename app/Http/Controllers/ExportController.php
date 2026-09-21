@@ -66,9 +66,24 @@ class ExportController extends Controller
         'L' => 'ASET LAINNYA',
     ];
 
+    /**
+     * Render tabel ratusan baris di DomPDF butuh memori jauh di atas default
+     * php-fpm (128M) — rekap KIB B saja sudah ~300MB.
+     */
+    private function raisePdfLimits(): void
+    {
+        if (ini_get('memory_limit') !== '-1') {
+            ini_set('memory_limit', '512M');
+        }
+
+        set_time_limit(300);
+    }
+
     public function export(Request $request, string $kibSlug)
     {
         $kibType = strtoupper(str_replace('kib-', '', $kibSlug));
+
+        $this->raisePdfLimits();
 
         if (! in_array($kibType, Asset::KIB_TYPES)) {
             abort(404);
@@ -109,6 +124,8 @@ class ExportController extends Controller
 
     public function kirRuangan(Request $request, Ruangan $ruangan)
     {
+        $this->raisePdfLimits();
+
         $user = auth()->user();
         if (! $user->isAdmin()) {
             $assigned = $user->ruangans()->pluck('ruangans.id');
