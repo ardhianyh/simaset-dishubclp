@@ -72,7 +72,7 @@ npx tsc --noEmit           # TypeScript check
 - Kolom kosong dibiarkan kosong, bukan diisi `-`
 - Harga: KIB A-E dan KIR dibagi 1000 (ikut contoh dokumen resmi); hanya KIB L yang rupiah penuh
 - KIB B urutan kolom: Kode Barang (2) lalu Nama Barang (3) — beda dari KIB lain, ikut template resmi
-- Label QR: kode lokasi = setting `label_kode_lokasi` + tahun perolehan aset (`Asset::tahunPerolehan()`)
+- Label QR: logo `public/logo.png` di samping nama instansi; kode lokasi = setting `label_kode_lokasi` + tahun perolehan aset (`Asset::tahunPerolehan()`); baris kode barang digabung nomor register
 - `ExportController::raisePdfLimits()` wajib dipanggil sebelum render PDF tabel besar — rekap KIB B (456 baris) butuh ~300MB, sedangkan php-fpm prod efektif 128MB
 
 ### Frontend
