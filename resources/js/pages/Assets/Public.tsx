@@ -1,4 +1,11 @@
 import { Head } from '@inertiajs/react';
+import { useState } from 'react';
+
+interface Foto {
+    id: number;
+    nama: string;
+    url: string;
+}
 
 interface Props {
     asset: {
@@ -10,6 +17,7 @@ interface Props {
         pj_nama: string;
         pj_nip?: string;
     };
+    fotos?: Foto[];
 }
 
 function Field({ label, value }: { label: string; value?: string | null }) {
@@ -21,7 +29,10 @@ function Field({ label, value }: { label: string; value?: string | null }) {
     );
 }
 
-export default function PublicAssetShow({ asset }: Props) {
+export default function PublicAssetShow({ asset, fotos = [] }: Props) {
+    const [aktif, setAktif] = useState(0);
+    const fotoAktif = fotos[aktif];
+
     return (
         <>
             <Head title={`${asset.nama_barang} - Simaset`} />
@@ -43,6 +54,43 @@ export default function PublicAssetShow({ asset }: Props) {
                                 {asset.kib_label}
                             </span>
                         </div>
+
+                        {fotoAktif && (
+                            <div className="border-b border-gray-200">
+                                <a href={fotoAktif.url} target="_blank" rel="noreferrer">
+                                    <img
+                                        src={fotoAktif.url}
+                                        alt={asset.nama_barang}
+                                        loading="lazy"
+                                        className="aspect-[4/3] w-full bg-gray-100 object-cover"
+                                    />
+                                </a>
+
+                                {fotos.length > 1 && (
+                                    <div className="flex gap-2 overflow-x-auto px-3 py-3">
+                                        {fotos.map((foto, index) => (
+                                            <button
+                                                key={foto.id}
+                                                type="button"
+                                                onClick={() => setAktif(index)}
+                                                className={`size-14 shrink-0 overflow-hidden rounded-md border-2 ${
+                                                    index === aktif
+                                                        ? 'border-gray-900'
+                                                        : 'border-transparent'
+                                                }`}
+                                            >
+                                                <img
+                                                    src={foto.url}
+                                                    alt={foto.nama}
+                                                    loading="lazy"
+                                                    className="size-full bg-gray-100 object-cover"
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         <dl className="px-5">
                             <Field label="Kode Barang" value={asset.kode_barang} />

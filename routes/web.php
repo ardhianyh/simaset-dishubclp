@@ -22,6 +22,7 @@ Route::get('/', function () {
 
 // Public asset page (accessible without auth, for QR code scanning)
 Route::get('/p/{asset}', [PublicAssetController::class, 'show'])->name('public.asset.show');
+Route::get('/p/{asset}/foto/{document}', [PublicAssetController::class, 'foto'])->name('public.asset.foto');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');

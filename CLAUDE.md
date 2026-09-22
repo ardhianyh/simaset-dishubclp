@@ -63,6 +63,7 @@ npx tsc --noEmit           # TypeScript check
 - Admin middleware alias: `'admin'` -> `EnsureUserIsAdmin`
 - Flash messages: `HandleInertiaRequests` -> `useFlashMessages` hook -> sonner Toaster
 - Private storage for documents (UUID naming)
+- Halaman publik hasil scan QR (`/p/{asset}`) menampilkan foto aset; hanya dokumen `jenis_dokumen = 'Foto'` yang disajikan tanpa login lewat `/p/{asset}/foto/{document}`, dokumen lain tetap tertutup
 
 ### Pergeseran Barang (mutasi antar ruangan)
 
