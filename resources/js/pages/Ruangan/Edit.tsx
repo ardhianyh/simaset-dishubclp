@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import PenanggungJawabInput from '@/components/PenanggungJawabInput';
 import { FormEvent } from 'react';
 
 interface Props {
@@ -67,11 +68,14 @@ export default function RuanganEdit({ ruangan }: Props) {
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="pj_nama">Penanggung Jawab Ruangan</Label>
-                                    <Input
+                                    <PenanggungJawabInput
                                         id="pj_nama"
                                         value={data.pj_nama}
-                                        onChange={(e) => setData('pj_nama', e.target.value)}
-                                        placeholder="Nama lengkap"
+                                        onChange={(nama) => setData('pj_nama', nama)}
+                                        onPick={(p) => {
+                                            setData('pj_nama', p.nama);
+                                            setData('pj_nip', p.nip ?? '');
+                                        }}
                                     />
                                     {errors.pj_nama && (
                                         <p className="text-sm text-red-600">{errors.pj_nama}</p>

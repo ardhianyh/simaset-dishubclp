@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { ArrowLeft, FileText, Upload } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
+import PenanggungJawabInput from '@/components/PenanggungJawabInput';
 import { toast } from 'sonner';
 import { formatValidationErrors } from '@/utils/formatErrors';
 
@@ -201,12 +202,26 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
                                 <Label>Penanggung Jawab Asal</Label>
-                                <Input value={pjAsalNama} onChange={(e) => setPjAsalNama(e.target.value)} placeholder="Nama lengkap" />
+                                <PenanggungJawabInput
+                                    value={pjAsalNama}
+                                    onChange={setPjAsalNama}
+                                    onPick={(p) => {
+                                        setPjAsalNama(p.nama);
+                                        setPjAsalNip(p.nip ?? '');
+                                    }}
+                                />
                                 <Input value={pjAsalNip} onChange={(e) => setPjAsalNip(e.target.value)} placeholder="NIP" />
                             </div>
                             <div className="space-y-2">
                                 <Label>Penanggung Jawab Tujuan</Label>
-                                <Input value={pjTujuanNama} onChange={(e) => setPjTujuanNama(e.target.value)} placeholder="Nama lengkap" />
+                                <PenanggungJawabInput
+                                    value={pjTujuanNama}
+                                    onChange={setPjTujuanNama}
+                                    onPick={(p) => {
+                                        setPjTujuanNama(p.nama);
+                                        setPjTujuanNip(p.nip ?? '');
+                                    }}
+                                />
                                 <Input value={pjTujuanNip} onChange={(e) => setPjTujuanNip(e.target.value)} placeholder="NIP" />
                                 <p className="text-muted-foreground text-xs">
                                     Nama ini akan menjadi penanggung jawab baru untuk semua barang yang digeser.

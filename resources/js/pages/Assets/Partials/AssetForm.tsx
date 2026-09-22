@@ -1,5 +1,6 @@
 import { Ruangan, KibType } from '@/types';
 import { Input } from '@/components/ui/input';
+import PenanggungJawabInput from '@/components/PenanggungJawabInput';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -181,9 +182,13 @@ export default function AssetForm({
                     <div className="grid gap-4 sm:grid-cols-3">
                         <div className="space-y-2">
                             <Label>Nama PJ *</Label>
-                            <Input
+                            <PenanggungJawabInput
                                 value={(data.pj_nama as string) ?? ''}
-                                onChange={(e) => setData('pj_nama', e.target.value)}
+                                onChange={(nama) => setData('pj_nama', nama)}
+                                onPick={(p) => {
+                                    setData('pj_nama', p.nama);
+                                    if (p.nip) setData('pj_nip', p.nip);
+                                }}
                                 placeholder="Nama penanggung jawab"
                             />
                             {errors.pj_nama && <p className="text-sm text-red-600">{errors.pj_nama}</p>}

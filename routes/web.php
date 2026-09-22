@@ -93,6 +93,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 // API-style routes (for search select)
 Route::middleware('auth')->group(function () {
     Route::get('/api/pejabats/search', [PejabatController::class, 'search'])->name('api.pejabats.search');
+    Route::get('/api/penanggung-jawab/search', [PejabatController::class, 'searchPenanggungJawab'])->name('api.penanggung-jawab.search');
 });
 
 require __DIR__.'/auth.php';

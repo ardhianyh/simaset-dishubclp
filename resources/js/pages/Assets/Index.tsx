@@ -27,6 +27,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import Pagination from '@/components/Pagination';
+import PenanggungJawabInput from '@/components/PenanggungJawabInput';
 import DisposalDialog from './Partials/DisposalDialog';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Search, Eye, FileDown, Upload, Download, LayoutList } from 'lucide-react';
@@ -364,7 +365,14 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
                             <div className="grid grid-cols-2 gap-2">
                                 <div className="space-y-1">
                                     <p className="text-muted-foreground text-xs">Nama</p>
-                                    <Input value={kirKepalaNama} onChange={(e) => setKirKepalaNama(e.target.value)} placeholder="Nama lengkap" />
+                                    <PenanggungJawabInput
+                                        value={kirKepalaNama}
+                                        onChange={setKirKepalaNama}
+                                        onPick={(p) => {
+                                            setKirKepalaNama(p.nama);
+                                            setKirKepalaNip(p.nip ?? '');
+                                        }}
+                                    />
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-muted-foreground text-xs">NIP</p>
@@ -377,7 +385,14 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
                             <div className="grid grid-cols-2 gap-2">
                                 <div className="space-y-1">
                                     <p className="text-muted-foreground text-xs">Nama</p>
-                                    <Input value={kirPengurusDinasNama} onChange={(e) => setKirPengurusDinasNama(e.target.value)} placeholder="Nama lengkap" />
+                                    <PenanggungJawabInput
+                                        value={kirPengurusDinasNama}
+                                        onChange={setKirPengurusDinasNama}
+                                        onPick={(p) => {
+                                            setKirPengurusDinasNama(p.nama);
+                                            setKirPengurusDinasNip(p.nip ?? '');
+                                        }}
+                                    />
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-muted-foreground text-xs">NIP</p>
@@ -396,7 +411,14 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
                             <div className="grid grid-cols-2 gap-2">
                                 <div className="space-y-1">
                                     <p className="text-muted-foreground text-xs">Nama</p>
-                                    <Input value={kirPengurusNama} onChange={(e) => setKirPengurusNama(e.target.value)} placeholder="Nama lengkap" />
+                                    <PenanggungJawabInput
+                                        value={kirPengurusNama}
+                                        onChange={setKirPengurusNama}
+                                        onPick={(p) => {
+                                            setKirPengurusNama(p.nama);
+                                            setKirPengurusNip(p.nip ?? '');
+                                        }}
+                                    />
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-muted-foreground text-xs">NIP</p>
@@ -409,7 +431,14 @@ export default function AssetIndex({ assets, kibType, kibLabel, ruangans, filter
                             <div className="grid grid-cols-2 gap-2">
                                 <div className="space-y-1">
                                     <p className="text-muted-foreground text-xs">Nama</p>
-                                    <Input value={kirPjNama} onChange={(e) => setKirPjNama(e.target.value)} placeholder="Nama lengkap" />
+                                    <PenanggungJawabInput
+                                        value={kirPjNama}
+                                        onChange={setKirPjNama}
+                                        onPick={(p) => {
+                                            setKirPjNama(p.nama);
+                                            setKirPjNip(p.nip ?? '');
+                                        }}
+                                    />
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-muted-foreground text-xs">NIP</p>
