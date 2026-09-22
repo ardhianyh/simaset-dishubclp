@@ -96,6 +96,7 @@ npx tsc --noEmit           # TypeScript check
 - `header` prop in AuthenticatedLayout is `string` type
 - Use `PageProps` from `@/types` for `usePage<PageProps>()`
 - KIB form data: `Record<string, any>` + `useState` + `router.post/put` (NOT `useForm` - doesn't work with nested objects)
+- Isian dengan usulan otomatis memakai `AutocompleteInput` (generik) + pembungkusnya: `PenanggungJawabInput` (nama -> NIP) dan `BarangSearchInput` (nama <-> kode barang). Sumber usulannya data yang sudah tercatat, diurutkan dari yang paling sering dipakai
 - Lazy-loaded MapView component on Dashboard
 - Leaflet default marker icons need explicit import fix
 

@@ -9,6 +9,39 @@ use Inertia\Inertia;
 
 class AssetSearchController extends Controller
 {
+    /**
+     * Usulan nama + kode barang untuk isian form aset.
+     *
+     * Diambil dari aset yang sudah tercatat dan diurutkan dari yang paling
+     * sering dipakai, supaya penulisan nama dan kode barang seragam.
+     */
+    public function searchBarang(Request $request)
+    {
+        $search = trim((string) $request->input('q', ''));
+
+        if ($search === '') {
+            return response()->json([]);
+        }
+
+        $query = Asset::query()
+            ->select('nama_barang', 'kode_barang')
+            ->selectRaw('count(*) as jumlah')
+            ->where(function ($q) use ($search) {
+                $q->where('nama_barang', 'ilike', "%{$search}%")
+                    ->orWhere('kode_barang', 'ilike', "%{$search}%");
+            })
+            ->groupBy('nama_barang', 'kode_barang')
+            ->orderByDesc('jumlah')
+            ->orderBy('nama_barang')
+            ->limit(10);
+
+        if ($kibType = $request->input('kib_type')) {
+            $query->where('kib_type', $kibType);
+        }
+
+        return response()->json($query->get());
+    }
+
     public function index(Request $request)
     {
         $query = Asset::with('ruangan:id,nama');

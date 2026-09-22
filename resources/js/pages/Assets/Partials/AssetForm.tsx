@@ -1,6 +1,7 @@
 import { Ruangan, KibType } from '@/types';
 import { Input } from '@/components/ui/input';
 import PenanggungJawabInput from '@/components/PenanggungJawabInput';
+import BarangSearchInput from '@/components/BarangSearchInput';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -77,18 +78,32 @@ export default function AssetForm({
                     <div className="grid gap-4 sm:grid-cols-3">
                         <div className="space-y-2">
                             <Label>Nama Barang *</Label>
-                            <Input
+                            <BarangSearchInput
+                                kibType={kibType}
                                 value={(data.nama_barang as string) ?? ''}
-                                onChange={(e) => setData('nama_barang', e.target.value)}
+                                onChange={(nama) => setData('nama_barang', nama)}
+                                onPick={(barang) => {
+                                    setData('nama_barang', barang.nama_barang);
+                                    setData('kode_barang', barang.kode_barang);
+                                }}
                                 placeholder="Jenis / Nama Barang"
                             />
                             {errors.nama_barang && <p className="text-sm text-red-600">{errors.nama_barang}</p>}
                         </div>
                         <div className="space-y-2">
                             <Label>Kode Barang *</Label>
-                            <Input
+                            <BarangSearchInput
+                                kibType={kibType}
                                 value={(data.kode_barang as string) ?? ''}
-                                onChange={(e) => setData('kode_barang', e.target.value)}
+                                onChange={(kode) => setData('kode_barang', kode)}
+                                onPick={(barang) => {
+                                    setData('kode_barang', barang.kode_barang);
+                                    // Nama hanya ikut terisi kalau masih kosong, supaya
+                                    // nama yang sudah diketik sendiri tidak tertimpa.
+                                    if (!((data.nama_barang as string) ?? '').trim()) {
+                                        setData('nama_barang', barang.nama_barang);
+                                    }
+                                }}
                                 placeholder="XX.XX.XX.XX.XXX"
                             />
                             {errors.kode_barang && <p className="text-sm text-red-600">{errors.kode_barang}</p>}
