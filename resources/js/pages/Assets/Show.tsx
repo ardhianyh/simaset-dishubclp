@@ -1,16 +1,18 @@
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { Asset, AssetGeneratedDocument, KibType } from '@/types';
+import { Asset, AssetGeneratedDocument, AssetLoan, KibType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Pencil, ArrowLeft, QrCode } from 'lucide-react';
+import { Pencil, ArrowLeft, QrCode, Handshake } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import DocumentSection from './Partials/DocumentSection';
 import PhotoSection from './Partials/PhotoSection';
 import PaktaIntegritasDialog from './Partials/PaktaIntegritasDialog';
 import BastDialog from './Partials/BastDialog';
+import KembalikanDialog from '@/pages/Peminjaman/Partials/KembalikanDialog';
+import { formatWaktu, terlambat } from '@/utils/waktu';
 
 interface RiwayatMutasi {
     id: number;
@@ -19,6 +21,7 @@ interface RiwayatMutasi {
         id: number;
         nomor_bast: string;
         tanggal: string;
+        jenis: 'pindah_ruangan' | 'ganti_pj';
         ruangan_asal_nama: string;
         ruangan_tujuan_nama: string;
         pj_tujuan_nama?: string | null;
@@ -32,6 +35,7 @@ interface Props {
     jenisOptions: string[];
     generatedDocuments?: Record<string, AssetGeneratedDocument>;
     riwayatMutasi?: RiwayatMutasi[];
+    riwayatPeminjaman?: AssetLoan[];
 }
 
 function formatCurrency(value: number): string {
@@ -60,11 +64,12 @@ function Field({ label, value }: { label: string; value?: string | number | bool
     );
 }
 
-export default function AssetShow({ asset, kibType, kibLabel, jenisOptions, generatedDocuments, riwayatMutasi = [] }: Props) {
+export default function AssetShow({ asset, kibType, kibLabel, jenisOptions, generatedDocuments, riwayatMutasi = [], riwayatPeminjaman = [] }: Props) {
     const kibSlug = `kib-${kibType.toLowerCase()}`;
     const detailKey = `kib_${kibType.toLowerCase()}_detail` as keyof Asset;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const detail = (asset[detailKey] as Record<string, any>) || {};
+    const pinjamanAktif = riwayatPeminjaman.find((p) => !p.dikembalikan_pada);
 
     return (
         <AuthenticatedLayout header={`Detail ${kibLabel}`}>
@@ -91,6 +96,14 @@ export default function AssetShow({ asset, kibType, kibLabel, jenisOptions, gene
                                 />
                             </>
                         )}
+                        {!pinjamanAktif && (
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href={`/peminjaman/create?asset_id=${asset.id}`}>
+                                    <Handshake className="mr-2 size-4" />
+                                    Pinjamkan
+                                </Link>
+                            </Button>
+                        )}
                         <Button size="sm" asChild>
                             <Link href={`/assets/${kibSlug}/${asset.id}/edit`}>
                                 <Pencil className="mr-2 size-4" />
@@ -99,6 +112,26 @@ export default function AssetShow({ asset, kibType, kibLabel, jenisOptions, gene
                         </Button>
                     </div>
                 </div>
+
+                {pinjamanAktif && (
+                    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/40">
+                        <Handshake className="size-5 shrink-0 text-amber-600" />
+                        <div className="min-w-0 flex-1 text-sm">
+                            <p className="font-medium">
+                                Sedang dipinjam {pinjamanAktif.peminjam_nama} ({pinjamanAktif.peminjam_ruangan_nama})
+                                {terlambat(pinjamanAktif.rencana_kembali, pinjamanAktif.dikembalikan_pada) && (
+                                    <Badge variant="destructive" className="ml-2">
+                                        Terlambat
+                                    </Badge>
+                                )}
+                            </p>
+                            <p className="text-muted-foreground">
+                                Sejak {formatWaktu(pinjamanAktif.dipinjam_pada)} · {pinjamanAktif.keperluan}
+                            </p>
+                        </div>
+                        <KembalikanDialog loan={pinjamanAktif} namaBarang={asset.nama_barang} />
+                    </div>
+                )}
 
                 <div className="flex items-center gap-4 rounded-lg border p-4">
                     <div className="shrink-0 rounded border p-1.5">
@@ -253,7 +286,7 @@ export default function AssetShow({ asset, kibType, kibLabel, jenisOptions, gene
                 {riwayatMutasi.length > 0 && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Riwayat Pergeseran Ruangan</CardTitle>
+                            <CardTitle className="text-base">Riwayat Pergeseran &amp; Penanggung Jawab</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <ol className="space-y-3">
@@ -268,9 +301,20 @@ export default function AssetShow({ asset, kibType, kibLabel, jenisOptions, gene
                                                   })
                                                 : '-'}
                                         </span>
-                                        <span>{riwayat.mutation?.ruangan_asal_nama}</span>
-                                        <span className="text-muted-foreground">&rarr;</span>
-                                        <span className="font-medium">{riwayat.mutation?.ruangan_tujuan_nama}</span>
+                                        {riwayat.mutation?.jenis === 'ganti_pj' ? (
+                                            <>
+                                                <span>PJ {riwayat.pj_asal_nama || '-'}</span>
+                                                <span className="text-muted-foreground">&rarr;</span>
+                                                <span className="font-medium">{riwayat.mutation.pj_tujuan_nama}</span>
+                                                <span className="text-muted-foreground text-xs">({riwayat.mutation.ruangan_asal_nama})</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span>{riwayat.mutation?.ruangan_asal_nama}</span>
+                                                <span className="text-muted-foreground">&rarr;</span>
+                                                <span className="font-medium">{riwayat.mutation?.ruangan_tujuan_nama}</span>
+                                            </>
+                                        )}
                                         {riwayat.mutation && (
                                             <Link
                                                 href={`/mutasi/${riwayat.mutation.id}`}
@@ -279,6 +323,36 @@ export default function AssetShow({ asset, kibType, kibLabel, jenisOptions, gene
                                                 BAST {riwayat.mutation.nomor_bast}
                                             </Link>
                                         )}
+                                    </li>
+                                ))}
+                            </ol>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {riwayatPeminjaman.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Riwayat Peminjaman</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ol className="divide-y">
+                                {riwayatPeminjaman.map((pinjam) => (
+                                    <li key={pinjam.id} className="flex flex-wrap items-start justify-between gap-2 py-3 text-sm first:pt-0 last:pb-0">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="font-medium">
+                                                {pinjam.peminjam_nama}{' '}
+                                                <span className="text-muted-foreground font-normal">({pinjam.peminjam_ruangan_nama})</span>
+                                            </p>
+                                            <p className="text-muted-foreground">{pinjam.keperluan}</p>
+                                            <p className="text-muted-foreground text-xs">
+                                                {formatWaktu(pinjam.dipinjam_pada)} &rarr;{' '}
+                                                {pinjam.dikembalikan_pada ? formatWaktu(pinjam.dikembalikan_pada) : 'belum kembali'}
+                                            </p>
+                                        </div>
+                                        <Badge variant={pinjam.dikembalikan_pada ? 'secondary' : 'default'}>
+                                            {pinjam.dikembalikan_pada ? 'Sudah kembali' : 'Sedang dipinjam'}
+                                        </Badge>
                                     </li>
                                 ))}
                             </ol>

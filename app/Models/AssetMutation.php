@@ -8,9 +8,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AssetMutation extends Model
 {
+    public const JENIS_PINDAH_RUANGAN = 'pindah_ruangan';
+
+    public const JENIS_GANTI_PJ = 'ganti_pj';
+
     protected $fillable = [
         'nomor_bast',
         'tanggal',
+        'jenis',
         'ruangan_asal_id',
         'ruangan_asal_nama',
         'ruangan_tujuan_id',

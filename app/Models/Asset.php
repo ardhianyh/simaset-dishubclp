@@ -119,6 +119,11 @@ class Asset extends Model
         return $this->hasMany(AssetMutationItem::class);
     }
 
+    public function loans(): HasMany
+    {
+        return $this->hasMany(AssetLoan::class);
+    }
+
     public function detail(): HasOne
     {
         $modelClass = self::DETAIL_MODELS[$this->kib_type] ?? null;

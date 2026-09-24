@@ -71,6 +71,7 @@ class AssetMutationController extends Controller
             $mutation = AssetMutation::create([
                 'nomor_bast' => $validated['nomor_bast'],
                 'tanggal' => $validated['tanggal'],
+                'jenis' => $this->jenis($asal, $tujuan),
                 'ruangan_asal_id' => $asal->id,
                 'ruangan_asal_nama' => $asal->nama,
                 'ruangan_tujuan_id' => $tujuan->id,
@@ -106,8 +107,11 @@ class AssetMutationController extends Controller
             return $mutation;
         });
 
-        return redirect()->route('mutasi.show', $mutation)
-            ->with('success', $assets->count().' barang berhasil digeser ke '.$tujuan->nama.'.');
+        $pesan = $mutation->jenis === AssetMutation::JENIS_GANTI_PJ
+            ? $assets->count().' barang kini menjadi tanggung jawab '.$mutation->pj_tujuan_nama.'.'
+            : $assets->count().' barang berhasil digeser ke '.$tujuan->nama.'.';
+
+        return redirect()->route('mutasi.show', $mutation)->with('success', $pesan);
     }
 
     public function show(AssetMutation $mutation)
@@ -151,6 +155,7 @@ class AssetMutationController extends Controller
         $assets = $this->resolveAssets($validated['asset_ids'], $asal->id);
 
         [$pdf, $filename] = $this->renderBastMutasi([
+            'jenis' => $this->jenis($asal, $tujuan),
             'nomor_bast' => $validated['nomor_bast'],
             'tanggal' => $validated['tanggal'],
             'ruangan_asal_nama' => $asal->nama,
@@ -179,6 +184,7 @@ class AssetMutationController extends Controller
             ->get();
 
         [$pdf, $filename] = $this->renderBastMutasi([
+            'jenis' => $mutation->jenis,
             'nomor_bast' => $mutation->nomor_bast,
             'tanggal' => $mutation->tanggal->format('Y-m-d'),
             'ruangan_asal_nama' => $mutation->ruangan_asal_nama,
@@ -202,25 +208,35 @@ class AssetMutationController extends Controller
             'nomor_bast' => ['required', 'string', 'max:255'],
             'tanggal' => ['required', 'date'],
             'ruangan_asal_id' => ['required', 'exists:ruangans,id'],
-            'ruangan_tujuan_id' => ['required', 'exists:ruangans,id', 'different:ruangan_asal_id'],
+            // Ruangan tujuan boleh sama dengan asal: itu berarti hanya ganti penanggung jawab.
+            'ruangan_tujuan_id' => ['required', 'exists:ruangans,id'],
             'asset_ids' => ['required', 'array', 'min:1'],
             'asset_ids.*' => ['integer', 'exists:assets,id'],
             'pj_asal_nama' => ['nullable', 'string', 'max:255'],
             'pj_asal_nip' => ['nullable', 'string', 'max:50'],
-            'pj_tujuan_nama' => ['nullable', 'string', 'max:255'],
+            'pj_tujuan_nama' => ['nullable', 'required_if_accepted:ganti_pj', 'string', 'max:255'],
             'pj_tujuan_nip' => ['nullable', 'string', 'max:50'],
             'keterangan' => ['nullable', 'string', 'max:2000'],
         ];
+
+        $request->merge(['ganti_pj' => $request->input('ruangan_asal_id') == $request->input('ruangan_tujuan_id')]);
 
         if ($requireDocument) {
             $rules['dokumen'] = ['required', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png'];
         }
 
         return $request->validate($rules, [
-            'ruangan_tujuan_id.different' => 'Ruangan tujuan harus berbeda dengan ruangan asal.',
+            'pj_tujuan_nama.required_if_accepted' => 'Isi penanggung jawab baru untuk barang yang ganti penanggung jawab.',
             'asset_ids.required' => 'Pilih minimal satu barang yang akan digeser.',
             'dokumen.required' => 'Dokumen BAST wajib diunggah sebelum barang dapat digeser.',
         ]);
+    }
+
+    private function jenis(Ruangan $asal, Ruangan $tujuan): string
+    {
+        return $asal->id === $tujuan->id
+            ? AssetMutation::JENIS_GANTI_PJ
+            : AssetMutation::JENIS_PINDAH_RUANGAN;
     }
 
     /**
@@ -284,6 +300,7 @@ class AssetMutationController extends Controller
         $kabupaten = str_ireplace(['pemerintah kabupaten ', 'pemerintah kota ', 'kabupaten ', 'kota '], '', $kabkota);
 
         $html = view('exports.bast-mutasi', [
+            'gantiPj' => $data['jenis'] === AssetMutation::JENIS_GANTI_PJ,
             'settings' => $settings,
             'nomorSurat' => $data['nomor_bast'],
             'tanggalFormatted' => \Carbon\Carbon::parse($data['tanggal'])->translatedFormat('d F Y'),
@@ -304,7 +321,9 @@ class AssetMutationController extends Controller
         $mpdf->SetTopMargin(15);
         $mpdf->WriteHTML($html);
 
-        $filename = 'BAST_Pergeseran_'.Str::slug($data['ruangan_asal_nama']).'_ke_'.Str::slug($data['ruangan_tujuan_nama']).'.pdf';
+        $filename = $data['jenis'] === AssetMutation::JENIS_GANTI_PJ
+            ? 'BAST_Ganti_PJ_'.Str::slug($data['ruangan_asal_nama']).'.pdf'
+            : 'BAST_Pergeseran_'.Str::slug($data['ruangan_asal_nama']).'_ke_'.Str::slug($data['ruangan_tujuan_nama']).'.pdf';
 
         return [$mpdf->Output($filename, 'S'), $filename];
     }

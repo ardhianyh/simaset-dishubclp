@@ -55,6 +55,7 @@ export interface AssetMutation {
     id: number;
     nomor_bast: string;
     tanggal: string;
+    jenis: 'pindah_ruangan' | 'ganti_pj';
     ruangan_asal_id?: number | null;
     ruangan_asal_nama: string;
     ruangan_tujuan_id?: number | null;
@@ -69,6 +70,25 @@ export interface AssetMutation {
     documents?: AssetMutationDocument[];
     creator?: User;
     created_at?: string;
+}
+
+export interface AssetLoan {
+    id: number;
+    asset_id: number;
+    ruangan_asal_id?: number | null;
+    ruangan_asal_nama?: string | null;
+    peminjam_nama: string;
+    peminjam_nip?: string | null;
+    peminjam_ruangan_id?: number | null;
+    peminjam_ruangan_nama: string;
+    keperluan: string;
+    /** Format "YYYY-MM-DD HH:mm" (WIB, tanpa zona waktu). */
+    dipinjam_pada: string;
+    rencana_kembali?: string | null;
+    dikembalikan_pada?: string | null;
+    catatan_kembali?: string | null;
+    can_manage?: boolean;
+    asset?: Asset;
 }
 
 export interface PaginatedData<T> {

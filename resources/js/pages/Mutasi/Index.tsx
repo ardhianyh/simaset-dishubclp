@@ -94,11 +94,25 @@ export default function MutasiIndex({ mutations, filters }: Props) {
                                         <TableCell>{formatTanggal(mutation.tanggal)}</TableCell>
                                         <TableCell className="font-medium">{mutation.nomor_bast}</TableCell>
                                         <TableCell>
-                                            <div className="flex items-center gap-2 text-sm">
-                                                <span>{mutation.ruangan_asal_nama}</span>
-                                                <ArrowRight className="text-muted-foreground size-4 shrink-0" />
-                                                <span className="font-medium">{mutation.ruangan_tujuan_nama}</span>
-                                            </div>
+                                            {mutation.jenis === 'ganti_pj' ? (
+                                                <div className="space-y-1 text-sm">
+                                                    <div className="flex items-center gap-2">
+                                                        <Badge variant="outline">Ganti PJ</Badge>
+                                                        <span>{mutation.ruangan_asal_nama}</span>
+                                                    </div>
+                                                    <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                                                        <span>{mutation.pj_asal_nama || '-'}</span>
+                                                        <ArrowRight className="size-3 shrink-0" />
+                                                        <span className="text-foreground font-medium">{mutation.pj_tujuan_nama}</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-2 text-sm">
+                                                    <span>{mutation.ruangan_asal_nama}</span>
+                                                    <ArrowRight className="text-muted-foreground size-4 shrink-0" />
+                                                    <span className="font-medium">{mutation.ruangan_tujuan_nama}</span>
+                                                </div>
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <Badge variant="secondary">

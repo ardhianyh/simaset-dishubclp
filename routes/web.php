@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\AssetDocumentController;
+use App\Http\Controllers\AssetLoanController;
 use App\Http\Controllers\AssetMutationController;
 use App\Http\Controllers\AssetSearchController;
 use App\Http\Controllers\DashboardController;
@@ -46,6 +47,12 @@ Route::middleware('auth')->group(function () {
         ->name('export.pakta-integritas');
     Route::get('/export/bast/{asset}', [ExportController::class, 'bast'])
         ->name('export.bast');
+
+    // Peminjaman barang sementara (dicatat pengurus barang pemilik barang)
+    Route::get('/peminjaman', [AssetLoanController::class, 'index'])->name('peminjaman.index');
+    Route::get('/peminjaman/create', [AssetLoanController::class, 'create'])->name('peminjaman.create');
+    Route::post('/peminjaman', [AssetLoanController::class, 'store'])->name('peminjaman.store');
+    Route::post('/peminjaman/{loan}/kembali', [AssetLoanController::class, 'kembalikan'])->name('peminjaman.kembali');
 
     // Asset routes (accessible by both admin and staff, scoped by WilayahScope)
     Route::prefix('assets/{kibSlug}')->where(['kibSlug' => 'kib-[a-el]'])->group(function () {

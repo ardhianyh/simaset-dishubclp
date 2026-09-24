@@ -18,6 +18,7 @@ import {
     ChevronDown,
     Search,
     ArrowLeftRight,
+    Handshake,
 } from 'lucide-react';
 import {
     Sidebar,
@@ -113,6 +114,14 @@ export default function AuthenticatedLayout({
                                         <Link href="/dashboard">
                                             <LayoutDashboard />
                                             <span>Dashboard</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild isActive={isActive('/peminjaman')}>
+                                        <Link href="/peminjaman">
+                                            <Handshake />
+                                            <span>Peminjaman Barang</span>
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>

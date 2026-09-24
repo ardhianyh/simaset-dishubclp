@@ -73,6 +73,15 @@ npx tsc --noEmit           # TypeScript check
 - Saat mutasi tersimpan: `assets.ruangan_id` + `pj_nama`/`pj_nip` diperbarui dari PJ ruangan tujuan
 - PJ ruangan ada di master `ruangans` (`pj_nama`, `pj_nip`), jadi terisi otomatis di form mutasi
 - Admin-only; tidak ada fitur pembatalan mutasi (riwayat dijaga utuh)
+- Kolom `jenis`: `pindah_ruangan`, atau `ganti_pj` (ruangan asal = tujuan, hanya PJ barang berganti; PJ baru wajib diisi). BAST memakai template yang sama dengan redaksi menyesuaikan `$gantiPj`
+
+### Peminjaman Barang (sementara)
+
+- Tabel `asset_loans`, satu baris per barang; barang **tidak** berpindah ruangan/PJ dan KIR tidak terpengaruh
+- Dicatat oleh pengurus barang pemilik barang: admin, atau staff yang memegang ruangan barang (bukan admin-only). Pengembalian juga dicatat pemilik
+- Staff ruangan peminjam hanya bisa melihat (`AssetLoan::scopeTerlihatOleh`)
+- Satu barang hanya boleh punya satu peminjaman aktif (`dikembalikan_pada` null)
+- Waktu disimpan naive WIB (`APP_TIMEZONE` UTC) dan diserialisasi `Y-m-d H:i`; di frontend diformat lewat `utils/waktu.ts`, jangan `new Date()`
 
 ### Export PDF
 

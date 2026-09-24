@@ -194,7 +194,7 @@ class AssetController extends Controller
             ->keyBy('jenis');
 
         $riwayatMutasi = $asset->mutationItems()
-            ->with('mutation:id,nomor_bast,tanggal,ruangan_asal_nama,ruangan_tujuan_nama,pj_tujuan_nama')
+            ->with('mutation:id,nomor_bast,tanggal,jenis,ruangan_asal_nama,ruangan_tujuan_nama,pj_tujuan_nama')
             ->get()
             ->sortBy(fn ($item) => $item->mutation?->tanggal)
             ->values();
@@ -206,6 +206,10 @@ class AssetController extends Controller
             'jenisOptions' => \App\Models\AssetDocument::JENIS_OPTIONS,
             'generatedDocuments' => $generatedDocuments,
             'riwayatMutasi' => $riwayatMutasi,
+            'riwayatPeminjaman' => $asset->loans()
+                ->orderByRaw('dikembalikan_pada is not null')
+                ->orderByDesc('dipinjam_pada')
+                ->get(),
         ]);
     }
 

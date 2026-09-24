@@ -32,8 +32,10 @@ function formatUkuran(bytes: number) {
 }
 
 export default function MutasiShow({ mutation }: Props) {
+    const gantiPj = mutation.jenis === 'ganti_pj';
+
     return (
-        <AuthenticatedLayout header={`Pergeseran ${mutation.nomor_bast}`}>
+        <AuthenticatedLayout header={`${gantiPj ? 'Ganti Penanggung Jawab' : 'Pergeseran'} ${mutation.nomor_bast}`}>
             <Head title={`Pergeseran ${mutation.nomor_bast}`} />
 
             <div className="mx-auto max-w-4xl space-y-6">
@@ -54,22 +56,45 @@ export default function MutasiShow({ mutation }: Props) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Rincian Pergeseran</CardTitle>
+                        <CardTitle>{gantiPj ? 'Rincian Ganti Penanggung Jawab' : 'Rincian Pergeseran'}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="flex flex-wrap items-center gap-3 text-sm">
-                            <div className="rounded-md border px-3 py-2">
-                                <p className="text-muted-foreground text-xs">Ruangan Asal</p>
-                                <p className="font-medium">{mutation.ruangan_asal_nama}</p>
-                                <p className="text-muted-foreground text-xs">{mutation.pj_asal_nama || '-'}</p>
+                        {gantiPj ? (
+                            <div className="space-y-2 text-sm">
+                                <p>
+                                    <span className="text-muted-foreground">Ruangan:</span>{' '}
+                                    <span className="font-medium">{mutation.ruangan_asal_nama}</span>{' '}
+                                    <span className="text-muted-foreground">(barang tetap di ruangan ini)</span>
+                                </p>
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <div className="rounded-md border px-3 py-2">
+                                        <p className="text-muted-foreground text-xs">Penanggung Jawab Lama</p>
+                                        <p className="font-medium">{mutation.pj_asal_nama || '-'}</p>
+                                        <p className="text-muted-foreground text-xs">{mutation.pj_asal_nip || ''}</p>
+                                    </div>
+                                    <ArrowRight className="text-muted-foreground size-5" />
+                                    <div className="rounded-md border px-3 py-2">
+                                        <p className="text-muted-foreground text-xs">Penanggung Jawab Baru</p>
+                                        <p className="font-medium">{mutation.pj_tujuan_nama || '-'}</p>
+                                        <p className="text-muted-foreground text-xs">{mutation.pj_tujuan_nip || ''}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <ArrowRight className="text-muted-foreground size-5" />
-                            <div className="rounded-md border px-3 py-2">
-                                <p className="text-muted-foreground text-xs">Ruangan Tujuan</p>
-                                <p className="font-medium">{mutation.ruangan_tujuan_nama}</p>
-                                <p className="text-muted-foreground text-xs">{mutation.pj_tujuan_nama || '-'}</p>
+                        ) : (
+                            <div className="flex flex-wrap items-center gap-3 text-sm">
+                                <div className="rounded-md border px-3 py-2">
+                                    <p className="text-muted-foreground text-xs">Ruangan Asal</p>
+                                    <p className="font-medium">{mutation.ruangan_asal_nama}</p>
+                                    <p className="text-muted-foreground text-xs">{mutation.pj_asal_nama || '-'}</p>
+                                </div>
+                                <ArrowRight className="text-muted-foreground size-5" />
+                                <div className="rounded-md border px-3 py-2">
+                                    <p className="text-muted-foreground text-xs">Ruangan Tujuan</p>
+                                    <p className="font-medium">{mutation.ruangan_tujuan_nama}</p>
+                                    <p className="text-muted-foreground text-xs">{mutation.pj_tujuan_nama || '-'}</p>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
                             <div>

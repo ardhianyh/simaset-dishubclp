@@ -105,7 +105,7 @@ class AssetMutationTest extends TestCase
         $this->assertSame(0, AssetMutation::count());
     }
 
-    public function test_ruangan_tujuan_tidak_boleh_sama_dengan_asal(): void
+    public function test_ganti_pj_di_ruangan_yang_sama_wajib_mengisi_pj_baru(): void
     {
         Storage::fake('local');
 
@@ -119,7 +119,38 @@ class AssetMutationTest extends TestCase
             'ruangan_tujuan_id' => $pka->id,
             'asset_ids' => [$asset->id],
             'dokumen' => UploadedFile::fake()->create('bast.pdf', 10, 'application/pdf'),
-        ])->assertSessionHasErrors('ruangan_tujuan_id');
+        ])->assertSessionHasErrors('pj_tujuan_nama');
+    }
+
+    public function test_ganti_pj_di_ruangan_yang_sama_tidak_memindahkan_barang(): void
+    {
+        Storage::fake('local');
+
+        $pka = $this->ruangan('PKA', 'Budi');
+        $asset = $this->aset($pka);
+
+        $this->actingAs($this->admin())->post('/mutasi', [
+            'nomor_bast' => '000.3.2/002/21/2026',
+            'tanggal' => '2026-03-01',
+            'ruangan_asal_id' => $pka->id,
+            'ruangan_tujuan_id' => $pka->id,
+            'asset_ids' => [$asset->id],
+            'pj_asal_nama' => 'Budi',
+            'pj_tujuan_nama' => 'Andi',
+            'pj_tujuan_nip' => '19900101 201001 1 002',
+            'dokumen' => UploadedFile::fake()->create('bast.pdf', 10, 'application/pdf'),
+        ])->assertRedirect();
+
+        $asset->refresh();
+        $this->assertSame($pka->id, $asset->ruangan_id);
+        $this->assertSame('Andi', $asset->pj_nama);
+        $this->assertSame('19900101 201001 1 002', $asset->pj_nip);
+
+        $mutation = AssetMutation::first();
+        $this->assertSame(AssetMutation::JENIS_GANTI_PJ, $mutation->jenis);
+        $this->assertSame('Budi', $mutation->items->first()->pj_asal_nama);
+
+        $this->get("/mutasi/{$mutation->id}/bast")->assertOk();
     }
 
     public function test_staff_tidak_bisa_menggeser_barang(): void

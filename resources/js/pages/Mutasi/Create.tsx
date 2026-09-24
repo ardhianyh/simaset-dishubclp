@@ -26,7 +26,10 @@ interface Props {
     ruanganAsalId: number | null;
 }
 
+type Jenis = 'pindah_ruangan' | 'ganti_pj';
+
 export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props) {
+    const [jenis, setJenis] = useState<Jenis>('pindah_ruangan');
     const [ruanganAsal, setRuanganAsal] = useState<string>(ruanganAsalId ? String(ruanganAsalId) : '');
     const [ruanganTujuan, setRuanganTujuan] = useState<string>('');
     const [selected, setSelected] = useState<number[]>([]);
@@ -42,7 +45,17 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
+    const gantiPj = jenis === 'ganti_pj';
+    // Ganti PJ berarti barang tetap di ruangan yang sama.
+    const tujuan = gantiPj ? ruanganAsal : ruanganTujuan;
     const ruanganTujuanOptions = ruangans.filter((r) => String(r.id) !== ruanganAsal);
+
+    function handleJenis(value: Jenis) {
+        setJenis(value);
+        setRuanganTujuan('');
+        setPjTujuanNama('');
+        setPjTujuanNip('');
+    }
 
     const assetsTersaring = useMemo(() => {
         const q = cari.trim().toLowerCase();
@@ -61,7 +74,11 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
         const ruangan = ruangans.find((r) => String(r.id) === value);
         setPjAsalNama(ruangan?.pj_nama ?? '');
         setPjAsalNip(ruangan?.pj_nip ?? '');
-        if (value === ruanganTujuan) setRuanganTujuan('');
+        if (value === ruanganTujuan) {
+            setRuanganTujuan('');
+            setPjTujuanNama('');
+            setPjTujuanNip('');
+        }
 
         router.get(
             '/mutasi/create',
@@ -90,7 +107,7 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
     function paramsDasar() {
         const params = new URLSearchParams();
         params.set('ruangan_asal_id', ruanganAsal);
-        params.set('ruangan_tujuan_id', ruanganTujuan);
+        params.set('ruangan_tujuan_id', tujuan);
         params.set('nomor_bast', nomorBast);
         params.set('tanggal', tanggal);
         if (pjAsalNama) params.set('pj_asal_nama', pjAsalNama);
@@ -103,8 +120,16 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
     }
 
     function cetakDraft() {
-        if (!ruanganAsal || !ruanganTujuan || selected.length === 0 || !nomorBast) {
-            toast.error('Lengkapi ruangan asal, ruangan tujuan, nomor BAST, dan pilih barangnya dulu.');
+        if (!ruanganAsal || !tujuan || selected.length === 0 || !nomorBast) {
+            toast.error(
+                gantiPj
+                    ? 'Lengkapi ruangan, nomor BAST, dan pilih barangnya dulu.'
+                    : 'Lengkapi ruangan asal, ruangan tujuan, nomor BAST, dan pilih barangnya dulu.',
+            );
+            return;
+        }
+        if (gantiPj && !pjTujuanNama) {
+            toast.error('Isi penanggung jawab baru dulu.');
             return;
         }
         window.open(`/mutasi/draft-bast?${paramsDasar().toString()}`, '_blank');
@@ -119,7 +144,7 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
             '/mutasi',
             {
                 ruangan_asal_id: ruanganAsal,
-                ruangan_tujuan_id: ruanganTujuan,
+                ruangan_tujuan_id: tujuan,
                 nomor_bast: nomorBast,
                 tanggal,
                 pj_asal_nama: pjAsalNama,
@@ -143,7 +168,7 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
     }
 
     return (
-        <AuthenticatedLayout header="Geser Barang Antar Ruangan">
+        <AuthenticatedLayout header={gantiPj ? 'Ganti Penanggung Jawab Barang' : 'Geser Barang Antar Ruangan'}>
             <Head title="Geser Barang" />
 
             <form onSubmit={handleSubmit} className="mx-auto max-w-4xl space-y-6">
@@ -158,15 +183,53 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
 
                 <Card>
                     <CardHeader>
+                        <CardTitle>Jenis Pergeseran</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            {(
+                                [
+                                    {
+                                        value: 'pindah_ruangan',
+                                        judul: 'Pindah ruangan',
+                                        keterangan: 'Barang berpindah ke ruangan lain beserta penanggung jawabnya.',
+                                    },
+                                    {
+                                        value: 'ganti_pj',
+                                        judul: 'Ganti penanggung jawab',
+                                        keterangan: 'Barang tetap di ruangan yang sama, hanya penanggung jawabnya berganti.',
+                                    },
+                                ] as const
+                            ).map((opsi) => (
+                                <button
+                                    key={opsi.value}
+                                    type="button"
+                                    onClick={() => handleJenis(opsi.value)}
+                                    className={`rounded-md border p-3 text-left transition-colors ${
+                                        jenis === opsi.value ? 'border-primary bg-primary/5 ring-primary ring-1' : 'hover:bg-muted/50'
+                                    }`}
+                                >
+                                    <p className="text-sm font-medium">{opsi.judul}</p>
+                                    <p className="text-muted-foreground text-xs">{opsi.keterangan}</p>
+                                </button>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
                         <CardTitle>Ruangan</CardTitle>
                         <CardDescription>
-                            Pilih ruangan asal, lalu centang barang yang akan digeser ke ruangan tujuan.
+                            {gantiPj
+                                ? 'Pilih ruangan, lalu centang barang yang berganti penanggung jawab.'
+                                : 'Pilih ruangan asal, lalu centang barang yang akan digeser ke ruangan tujuan.'}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
-                                <Label>Ruangan Asal *</Label>
+                                <Label>{gantiPj ? 'Ruangan *' : 'Ruangan Asal *'}</Label>
                                 <Select value={ruanganAsal} onValueChange={handleRuanganAsal}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Pilih ruangan asal" />
@@ -181,27 +244,29 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
                                 </Select>
                                 {errors.ruangan_asal_id && <p className="text-sm text-red-600">{errors.ruangan_asal_id}</p>}
                             </div>
-                            <div className="space-y-2">
-                                <Label>Ruangan Tujuan *</Label>
-                                <Select value={ruanganTujuan} onValueChange={handleRuanganTujuan}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Pilih ruangan tujuan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {ruanganTujuanOptions.map((r) => (
-                                            <SelectItem key={r.id} value={String(r.id)}>
-                                                {r.nama}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {errors.ruangan_tujuan_id && <p className="text-sm text-red-600">{errors.ruangan_tujuan_id}</p>}
-                            </div>
+                            {!gantiPj && (
+                                <div className="space-y-2">
+                                    <Label>Ruangan Tujuan *</Label>
+                                    <Select value={ruanganTujuan} onValueChange={handleRuanganTujuan}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Pilih ruangan tujuan" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {ruanganTujuanOptions.map((r) => (
+                                                <SelectItem key={r.id} value={String(r.id)}>
+                                                    {r.nama}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.ruangan_tujuan_id && <p className="text-sm text-red-600">{errors.ruangan_tujuan_id}</p>}
+                                </div>
+                            )}
                         </div>
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
-                                <Label>Penanggung Jawab Asal</Label>
+                                <Label>{gantiPj ? 'Penanggung Jawab Lama' : 'Penanggung Jawab Asal'}</Label>
                                 <PenanggungJawabInput
                                     value={pjAsalNama}
                                     onChange={setPjAsalNama}
@@ -213,7 +278,7 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
                                 <Input value={pjAsalNip} onChange={(e) => setPjAsalNip(e.target.value)} placeholder="NIP" />
                             </div>
                             <div className="space-y-2">
-                                <Label>Penanggung Jawab Tujuan</Label>
+                                <Label>{gantiPj ? 'Penanggung Jawab Baru *' : 'Penanggung Jawab Tujuan'}</Label>
                                 <PenanggungJawabInput
                                     value={pjTujuanNama}
                                     onChange={setPjTujuanNama}
@@ -223,8 +288,9 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
                                     }}
                                 />
                                 <Input value={pjTujuanNip} onChange={(e) => setPjTujuanNip(e.target.value)} placeholder="NIP" />
+                                {errors.pj_tujuan_nama && <p className="text-sm text-red-600">{errors.pj_tujuan_nama}</p>}
                                 <p className="text-muted-foreground text-xs">
-                                    Nama ini akan menjadi penanggung jawab baru untuk semua barang yang digeser.
+                                    Nama ini akan menjadi penanggung jawab baru untuk semua barang yang dipilih.
                                 </p>
                             </div>
                         </div>
@@ -233,7 +299,7 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Barang yang Digeser</CardTitle>
+                        <CardTitle>{gantiPj ? 'Barang yang Berganti Penanggung Jawab' : 'Barang yang Digeser'}</CardTitle>
                         <CardDescription>
                             {ruanganAsal
                                 ? `${selected.length} dari ${assets.length} barang dipilih`
@@ -271,6 +337,9 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
                                                     {asset.kode_barang} · {asset.nomor_register}
                                                 </p>
                                             </div>
+                                            <div className="text-muted-foreground hidden shrink-0 text-right text-xs sm:block">
+                                                PJ: {asset.pj_nama || '-'}
+                                            </div>
                                         </label>
                                     ))}
                                     {assetsTersaring.length === 0 && (
@@ -297,7 +366,9 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
                         <CardTitle>Berita Acara Serah Terima</CardTitle>
                         <CardDescription>
                             Cetak draft BAST untuk ditandatangani, lalu unggah kembali hasil tanda tangannya.
-                            Barang baru berpindah setelah dokumen ini diunggah.
+                            {gantiPj
+                                ? 'Penanggung jawab baru berlaku setelah dokumen ini diunggah.'
+                                : 'Barang baru berpindah setelah dokumen ini diunggah.'}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -323,7 +394,7 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
                             <Textarea
                                 value={keterangan}
                                 onChange={(e) => setKeterangan(e.target.value)}
-                                placeholder="Alasan pergeseran (opsional)"
+                                placeholder={gantiPj ? 'Alasan pergantian penanggung jawab (opsional)' : 'Alasan pergeseran (opsional)'}
                                 rows={2}
                             />
                         </div>
@@ -351,7 +422,7 @@ export default function MutasiCreate({ ruangans, assets, ruanganAsalId }: Props)
                 <div className="flex items-center gap-2">
                     <Button type="submit" disabled={processing}>
                         <Upload className="mr-2 size-4" />
-                        {processing ? 'Memproses...' : 'Proses Pergeseran'}
+                        {processing ? 'Memproses...' : gantiPj ? 'Proses Ganti Penanggung Jawab' : 'Proses Pergeseran'}
                     </Button>
                     <Button type="button" variant="outline" asChild>
                         <Link href="/mutasi">Batal</Link>

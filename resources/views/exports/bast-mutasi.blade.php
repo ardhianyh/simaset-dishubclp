@@ -69,7 +69,7 @@
 
     <!-- JUDUL -->
     <div class="judul">
-        <h3>BERITA ACARA SERAH TERIMA BARANG INVENTARIS<br>ANTAR RUANGAN</h3>
+        <h3>BERITA ACARA SERAH TERIMA BARANG INVENTARIS<br>{{ $gantiPj ? 'ANTAR PENANGGUNG JAWAB' : 'ANTAR RUANGAN' }}</h3>
         @if($nomorSurat)
             <p class="nomor">Nomor : {{ $nomorSurat }}</p>
         @endif
@@ -83,14 +83,14 @@
             <td class="no">1.</td>
             <td class="nama">{{ $pihak1Nama }}</td>
             <td class="sep">:</td>
-            <td>Penanggung Jawab Ruangan {{ $ruanganAsal }}, selanjutnya disebut <strong>PIHAK PERTAMA.</strong></td>
+            <td>{{ $gantiPj ? 'Penanggung Jawab Barang Lama pada Ruangan' : 'Penanggung Jawab Ruangan' }} {{ $ruanganAsal }}, selanjutnya disebut <strong>PIHAK PERTAMA.</strong></td>
         </tr>
         <tr><td colspan="4" style="height: 3mm;"></td></tr>
         <tr>
             <td class="no">2.</td>
             <td class="nama">{{ $pihak2Nama }}</td>
             <td class="sep">:</td>
-            <td>Penanggung Jawab Ruangan {{ $ruanganTujuan }}, selanjutnya disebut <strong>PIHAK KEDUA.</strong></td>
+            <td>{{ $gantiPj ? 'Penanggung Jawab Barang Baru pada Ruangan' : 'Penanggung Jawab Ruangan' }} {{ $ruanganTujuan }}, selanjutnya disebut <strong>PIHAK KEDUA.</strong></td>
         </tr>
     </table>
 
@@ -99,7 +99,7 @@
     <!-- PASAL 1 -->
     <p class="pasal">Pasal 1</p>
 
-    <p class="p-indent">PIHAK PERTAMA menyerahkan kepada PIHAK KEDUA sebagaimana PIHAK KEDUA menerima penyerahan dari PIHAK PERTAMA, berupa barang inventaris yang digeser dari Ruangan {{ $ruanganAsal }} ke Ruangan {{ $ruanganTujuan }} dengan rincian sebagai berikut :</p>
+    <p class="p-indent">PIHAK PERTAMA menyerahkan kepada PIHAK KEDUA sebagaimana PIHAK KEDUA menerima penyerahan dari PIHAK PERTAMA, berupa @if($gantiPj)tanggung jawab atas barang inventaris pada Ruangan {{ $ruanganAsal }}@else barang inventaris yang digeser dari Ruangan {{ $ruanganAsal }} ke Ruangan {{ $ruanganTujuan }}@endif dengan rincian sebagai berikut :</p>
 
     <table class="barang">
         <thead>
@@ -133,7 +133,11 @@
     <!-- PASAL 2 -->
     <p class="pasal">Pasal 2</p>
 
+    @if($gantiPj)
+    <p class="p-indent">Sejak tanggal serah terima ini, barang inventaris tersebut pada pasal 1 tetap tercatat pada Kartu Inventaris Ruangan {{ $ruanganTujuan }}, sedangkan penggunaan serta pemeliharaannya menjadi tanggung jawab PIHAK KEDUA.</p>
+    @else
     <p class="p-indent">Sejak tanggal serah terima ini, barang inventaris tersebut pada pasal 1 tercatat pada Kartu Inventaris Ruangan {{ $ruanganTujuan }} dan penggunaan serta pemeliharaannya menjadi tanggung jawab PIHAK KEDUA.</p>
+    @endif
 
     <!-- PASAL 3 -->
     <p class="pasal">Pasal 3</p>
